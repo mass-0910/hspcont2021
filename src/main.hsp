@@ -4,12 +4,14 @@
 #define global WINDOW_HEIGHT 480
 #define global MAPCHIP_HANDLER 1
 #define global DIALOG_HANDLER 5
+#define global MINIMAP_HANDLER 50
 #define global DIALOG_SIZE_WIDTH 180
 #define global DIALOG_SIZE_HEIGHT 180
 #define global TANK_HANDLER 2
 #define global TANK_BADGE_HANDLER 4
 #define global BASE_HANDLER 3
 #define global CURSOR_HANDLER 6
+#define global COMMAND_BADGE_HANDLER 7
 #define global PLAYER_COUNT 64
 #define global ENEMY_COUNT 64
 #define global PLAYER_BASE_INDEX 0
@@ -25,6 +27,26 @@
 #module
     #deffunc posRelative double x, double y
         pos (x - camera_x@) * camera_expand@ + WINDOW_WIDTH / 2, (y - camera_y@) * camera_expand@ + WINDOW_HEIGHT / 2
+    return
+
+    #deffunc boxfa int ax, int ay, int bx, int by
+        pdx = ax, bx, bx, ax
+        pdy = ay, ay, by, by
+        gsquare -1, pdx, pdy
+    return
+
+    #deffunc boxfRelative double p1, double p2, double p3, double p4
+        boxfa (p1 - camera_x@) * camera_expand@ + WINDOW_WIDTH / 2, (p2 - camera_y@) * camera_expand@ + WINDOW_HEIGHT / 2, (p3 - camera_x@) * camera_expand@ + WINDOW_WIDTH / 2, (p4 - camera_y@) * camera_expand@ + WINDOW_HEIGHT / 2
+    return
+
+    #deffunc circleRelative double p1, double p2, double p3, double p4
+        circle (p1 - camera_x@) * camera_expand@ + WINDOW_WIDTH / 2, (p2 - camera_y@) * camera_expand@ + WINDOW_HEIGHT / 2, (p3 - camera_x@) * camera_expand@ + WINDOW_WIDTH / 2, (p4 - camera_y@) * camera_expand@ + WINDOW_HEIGHT / 2, 0
+    return
+#global
+
+#module
+    #deffunc psetBig int px, int py, int scale
+        circle px - scale, py - scale, px + scale, py + scale
     return
 #global
 
@@ -81,10 +103,32 @@ right_trigger = false
         return double(image_height)
 #global
 
+// 文字描画の際のサイズを取得する関数
+#module
+    #defcfunc getMesWidth str string
+        cpx = ginfo_cx : cpy = ginfo_cy
+        pos -999, -999
+        mes string
+        mes_width = ginfo_mesx
+        pos cpx, cpy
+        return double(mes_width)
+
+    #defcfunc getMesHeight str string
+        cpx = ginfo_cx : cpy = ginfo_cy
+        pos -999, -999
+        mes string
+        mes_height = ginfo_mesy
+        pos cpx, cpy
+        return double(mes_height)
+#global
+
 // 矩形内に入っているかどうかを判定する関数
 #module
     #defcfunc inRect double px, double py, double rx1, double ry1, double rx2, double ry2
-        return px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2
+        return (px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2) || (px >= rx1 && px <= rx2 && py >= ry2 && py <= ry1) || (px >= rx2 && px <= rx1 && py >= ry1 && py <= ry2) || (px >= rx2 && px <= rx1 && py >= ry2 && py <= ry1)
+
+    #defcfunc hitRect double r1x1, double r1y1, double r1x2, double r1y2, double r2x1, double r2y1, double r2x2, double r2y2
+        return r1x1 <= r2x2 && r2x1 <= r1x2 && r1y1 <= r2y2 && r2y1 <= r1y2
 #global
 
 // 変数をある値に線形に近づける
@@ -144,15 +188,70 @@ right_trigger = false
     return
 #global
 
+// int型可変長リスト風モジュール
+#module intList list, len, empty
+    #modinit int maxLength, int emptyval
+        dim list, maxLength
+        len = maxLength
+        empty = emptyval
+        repeat len
+            list(cnt) = emptyval
+        loop
+    return
+
+    #modcfunc listGet int index
+        return list(index)
+
+    #modfunc listSet int index, int val
+        list(index) = val
+    return
+
+    #modcfunc listLen
+        count = 0
+        repeat len
+            if list(cnt) == empty: break
+            count++
+        loop
+        return count
+
+    #modfunc listAppend int val
+        repeat len
+            if list(cnt) == empty {
+                list(cnt) = val
+                break
+            }
+        loop
+    return
+
+    #modfunc listRemoveAt int index
+        repeat len - index - 1, index
+            list(cnt) = list(cnt + 1)
+        loop
+        list(len - 1) = empty
+    return
+
+    #modfunc listClear
+        repeat len
+            if list(cnt) == empty: break
+            list(cnt) = empty
+        loop
+    return
+#global
+
 // プログラムスタート時の初期化
 *start
     //スクリーンの初期化
     screen 0, WINDOW_WIDTH, WINDOW_HEIGHT
+    font "ＭＳ ゴシック", 9
     title "Panzer Command"
     gmode 2
 
+    // 乱数初期化
+    randomize
+
     // バッファの初期化
-    buffer DIALOG_HANDLER,
+    buffer DIALOG_HANDLER
+    buffer MINIMAP_HANDLER
 
     // 素材のロード
     celload "..\\resources\\image\\tank.png", TANK_HANDLER
@@ -160,16 +259,22 @@ right_trigger = false
     celload "..\\resources\\image\\team.png", BASE_HANDLER
     celload "..\\resources\\image\\tankbadge.png", TANK_BADGE_HANDLER
     celload "..\\resources\\image\\cursor.png", CURSOR_HANDLER
+    celload "..\\resources\\image\\commandbadge.png", COMMAND_BADGE_HANDLER
     celdiv MAPCHIP_HANDLER, 18, 18, 0, 0
+    celdiv TANK_HANDLER, 32, 32, 16, 16
     celdiv TANK_BADGE_HANDLER, 64, 64, 0, 0
     celdiv CURSOR_HANDLER, 64, 64, 32, 32
+    celdiv COMMAND_BADGE_HANDLER, 64, 64, 0, 0
 
     // 配列の定義
     // tank: 戦車を表す属性(味方も敵もここで定義)
     dim tank_used, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_x, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_y, PLAYER_COUNT + ENEMY_COUNT
+    ddim tank_target_x, PLAYER_COUNT + ENEMY_COUNT
+    ddim tank_target_y, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_angle, PLAYER_COUNT + ENEMY_COUNT
+    dim tank_stop, PLAYER_COUNT + ENEMY_COUNT
     dim tank_image_handler, PLAYER_COUNT + ENEMY_COUNT
     dim tank_image_width, PLAYER_COUNT + ENEMY_COUNT
     dim tank_image_height, PLAYER_COUNT + ENEMY_COUNT
@@ -191,6 +296,9 @@ right_trigger = false
     dim tankdata_defence, TANKTYPE_MAX
     ddim tankdata_speed, TANKTYPE_MAX
 
+    // モジュール変数の初期化
+    newmod selected_tank_index_list, intList, 64, 9999999999999
+
     // 戦車情報のロード
     //TODO: とりあえず
     repeat TANKTYPE_MAX
@@ -206,7 +314,6 @@ right_trigger = false
 // ゲームリスタート時の初期化
 *init
     //各種変数の初期化
-
     camera_x = 0.0 //カメラ左上x座標
     camera_y = 0.0 //カメラ左上y座標
     repeat PLAYER_COUNT + ENEMY_COUNT
@@ -228,6 +335,7 @@ right_trigger = false
     loop
     field_width_max = MAPCHIP_ROOT_MAX * MAPCHIP_EDGE_POINT
     field_height_max = MAPCHIP_ROOT_MAX * MAPCHIP_EDGE_POINT
+    gosub *game_init_minimap
     player_castle_x = (double(MAPCHIP_ROOT_MAX) * double(MAPCHIP_EDGE_POINT)) / 2.0
     player_castle_y = ((double(MAPCHIP_ROOT_MAX) - 25.0) * double(MAPCHIP_EDGE_POINT)) - double(MAPCHIP_EDGE_POINT) / 2.0
     enemy_castle_x = (double(MAPCHIP_ROOT_MAX) * double(MAPCHIP_EDGE_POINT)) / 2.0
@@ -241,8 +349,18 @@ right_trigger = false
 
     click_counter = 0
 
-    mode_seltank = false
+    mode_focus_castle = false
+    mode_focus_tank = false
     mode_dialog = false
+    mode_command_ahead = false
+
+    log_publish = false
+    log_buffer = ""
+
+    select_area_x1 = -1
+    select_area_y1 = -1
+    select_area_x2 = -1
+    select_area_y2 = -1
 
     counter = 0
 
@@ -268,18 +386,46 @@ right_trigger = false
     // 陣地描画
     posRelative player_castle_x - getImageWidth(BASE_HANDLER) / 2, player_castle_y - getImageHeight(BASE_HANDLER) / 2
     celput BASE_HANDLER, 0, camera_expand, camera_expand
-    if mode_seltank { // 戦車選択モードのとき、カーソルを自陣に描画
+
+    // 自陣選択モードのとき
+    if mode_focus_castle {
+        // カーソルを自陣に描画
         posRelative player_castle_x, player_castle_y
         celput CURSOR_HANDLER, int(counter / 20) \ 2, 2.0 * camera_expand, 2.0 * camera_expand
+        // 出撃可能範囲を描画
+        color 0, 255, 0
+        circleRelative player_castle_x - 128, player_castle_y - 128, player_castle_x + 128, player_castle_y + 128
+        posRelative player_castle_x, player_castle_y - 128
+        px = ginfo_cx : py = ginfo_cy
+        pos px - getMesWidth("出撃可能範囲") / 2, py - getMesHeight("出撃可能範囲")
+        objcolor 0, 0, 0
+        mes "出撃可能範囲", mesopt_outline
     }
 
     // 戦車描画
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) {
-            posRelative tank_x(cnt) - tank_image_width(cnt) / 2, tank_y(cnt) - tank_image_height(cnt) / 2
+            posRelative tank_x(cnt), tank_y(cnt)
             celput tank_image_handler(cnt), 0, camera_expand, camera_expand, tank_angle(cnt)
         }
     loop
+
+    // 戦車選択モードのとき
+    if mode_focus_tank {
+        // カーソルを選択した戦車に描画
+        repeat listLen(selected_tank_index_list)
+            posRelative tank_x(listGet(selected_tank_index_list, cnt)), tank_y(listGet(selected_tank_index_list, cnt))
+            celput CURSOR_HANDLER, int(counter / 20) \ 2, 0.5 * camera_expand, 0.5 * camera_expand
+        loop
+    }
+
+    // 選択範囲描画
+    getkey a, 1: if a && mode_focus_castle == false && mode_focus_tank == false{
+        color 100, 100, 255
+        gmode 3, , , 128
+        boxfRelative select_area_x1, select_area_y1, select_area_x2, select_area_y2
+        gmode 2
+    }
 
     // ダイアログ描画
     gsel DIALOG_HANDLER
@@ -298,15 +444,14 @@ right_trigger = false
         intCloserTo dialog_alpha, 0, 20
     }
 
-    // 出撃戦車選択モードのとき、戦車選択ダイアログを描画
-    if mode_seltank {
+    // 出撃戦車選択モードのとき、自陣ダイアログを描画
+    if mode_focus_castle {
         // 背景描画
         color 0, 0, 0
         boxf 0, WINDOW_HEIGHT - 100, WINDOW_WIDTH, WINDOW_HEIGHT
         // メッセージ描画
         pos 5, WINDOW_HEIGHT - 100 + 5
         color 255, 255, 255
-        font "ＭＳ ゴシック", 9
         mes "プレイヤー拠点"
         // バツボタン描画
         color 150, 150, 150
@@ -321,8 +466,35 @@ right_trigger = false
         loop
     }
 
+    // 戦車フォーカルモードのとき、戦車命令ダイアログを描画
+    if mode_focus_tank {
+        // 背景描画
+        color 0, 0, 0
+        boxf 0, WINDOW_HEIGHT - 100, WINDOW_WIDTH, WINDOW_HEIGHT
+        // メッセージ描画
+        pos 5, WINDOW_HEIGHT - 100 + 5
+        color 255, 255, 255
+        mes "コマンド"
+        // バツボタン描画
+        color 150, 150, 150
+        boxf WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
+        color 0, 0, 0
+        line WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
+        line WINDOW_WIDTH - 10, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 70
+        // 戦車ボタン描画
+        repeat 4
+            pos 74 * cnt + 10, WINDOW_HEIGHT - 82
+            celput COMMAND_BADGE_HANDLER, cnt
+        loop
+    }
+
+    // 目的地選択コマンドモードのとき、マップを描画
+    if mode_command_ahead {
+        gosub *game_draw_minimap
+    }
+
     // フォーカスモードでないときマウス操作
-    if mode_seltank == false {
+    if mode_focus_castle == false && mode_focus_tank == false{
         // カメラ操作(キーボード)
         getkey a, 37: if a: camera_x -= 10.0
         getkey a, 38: if a: camera_y -= 10.0
@@ -334,14 +506,47 @@ right_trigger = false
             camera_x -= int(double(mousex - before_mx) * (1.0 / camera_expand))
             camera_y -= int(double(mousey - before_my) * (1.0 / camera_expand))
         }
+
+        // 範囲指定
+        getkey a, 1: if a {
+            select_area_x2 = getMousePosX()
+            select_area_y2 = getMousePosY()
+        } else {
+            // フィールドにある戦車を選択
+            if select_area_x1 != -1 && select_area_y1 != -1 && select_area_x2 != -1 && select_area_y2 != -1 {
+                gosub *game_area_select_player_tank
+                if listLen(selected_tank_index_list) != 0 {
+                    mode_focus_tank = true
+                }
+            }
+            select_area_x1 = -1
+            select_area_y1 = -1
+            select_area_x2 = -1
+            select_area_y2 = -1
+        }
     }
     before_mx = mousex
     before_my = mousey
 
-    // フォーカスモードのとき物体にカメラを近づける
-    if mode_seltank {
+    // 自陣フォーカスモードのとき物体にカメラを近づける
+    if mode_focus_castle {
         closerSpeedy camera_x, player_castle_x, 0.1
         closerSpeedy camera_y, player_castle_y, 0.1
+    }
+
+    // 戦車フォーカスモードのとき物体にカメラを近づける
+    if mode_focus_tank {
+        // 選択された戦車の重心を求める
+        selected_tank_gx = 0.0
+        selected_tank_gy = 0.0
+        repeat listLen(selected_tank_index_list)
+            selected_tank_gx += tank_x(listGet(selected_tank_index_list, cnt))
+            selected_tank_gy += tank_y(listGet(selected_tank_index_list, cnt))
+        loop
+        selected_tank_gx /= double(listLen(selected_tank_index_list))
+        selected_tank_gy /= double(listLen(selected_tank_index_list))
+        closerSpeedy camera_x, selected_tank_gx, 0.1
+        closerSpeedy camera_y, selected_tank_gy, 0.1
     }
 
     // マウスホイールによる拡大縮小
@@ -373,7 +578,8 @@ right_trigger = false
 
     // 戦車の動き
     repeat PLAYER_COUNT + ENEMY_COUNT
-        if tank_used(cnt) {
+        if tank_used(cnt) && tank_stop(cnt) == false {
+            tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
             tank_x(cnt) += cos(tank_angle(cnt)) * tank_speed(cnt)
             tank_y(cnt) += sin(tank_angle(cnt)) * tank_speed(cnt)
         }
@@ -389,15 +595,15 @@ right_trigger = false
     mx = getMousePosX()
     my = getMousePosY()
 
-    if inRect(mx, my, player_castle_x - 64, player_castle_y - 64, player_castle_x + 64, player_castle_y + 64) && mode_seltank == false { // 自陣をクリックしたとき
-        mode_seltank = true
+    if inRect(mx, my, player_castle_x - 64, player_castle_y - 64, player_castle_x + 64, player_castle_y + 64) && mode_focus_castle == false && mode_focus_tank == false{ // 自陣をクリックしたとき
+        mode_focus_castle = true
         return
     }
 
     // 戦車選択ダイアログでのマウスの動作
-    if mode_seltank {
+    if mode_focus_castle {
         if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //バツボタンが押されたとき
-            mode_seltank = false
+            mode_focus_castle = false
             return
         }
         repeat 5
@@ -406,7 +612,51 @@ right_trigger = false
                 gosub *game_playertank_launch
             }
         loop
+        return
     }
+
+    // 戦車フォーカスモードでのマウスの動作
+    if mode_focus_tank && mode_command_ahead == false{
+        if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //バツボタンが押されたとき
+            mode_focus_tank = false
+            return
+        }
+        repeat 5
+            if inRect(mousex, mousey, 74 * cnt + 10, WINDOW_HEIGHT - 82, 74 * cnt + 10 + 64, WINDOW_HEIGHT - 82 + 64) {
+                switch cnt
+                    case 0: // 目的地選択
+                        mode_command_ahead = true
+                        swbreak
+                    case 1: // 動く
+                        repeat listLen(selected_tank_index_list)
+                            tank_stop(listGet(selected_tank_index_list, cnt)) = false
+                        loop
+                        swbreak
+                    case 2: // 停まる
+                        repeat listLen(selected_tank_index_list)
+                            tank_stop(listGet(selected_tank_index_list, cnt)) = true
+                        loop
+                        swbreak
+                swend
+            }
+        loop
+    }
+
+    // 目的地選択
+    if mode_command_ahead {
+        if inRect(mousex, mousey, minimap_base_x, minimap_base_y, minimap_base_x + field_width_max / double(MAPCHIP_EDGE_POINT), minimap_base_y + field_height_max / double(MAPCHIP_EDGE_POINT)) {
+            repeat listLen(selected_tank_index_list)
+                tank_target_x(listGet(selected_tank_index_list, cnt)) = double(mousex * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_x * MAPCHIP_EDGE_POINT)
+                tank_target_y(listGet(selected_tank_index_list, cnt)) = double(mousey * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_y * MAPCHIP_EDGE_POINT)
+                title str(tank_target_x(listGet(selected_tank_index_list, cnt))) + str(tank_target_y(listGet(selected_tank_index_list, cnt)))
+                tank_stop(listGet(selected_tank_index_list, cnt)) = false
+            loop
+        }
+    }
+
+    // 選択範囲指定の最初地点の設定
+    select_area_x1 = mx
+    select_area_y1 = my
 return
 
 // ゲーム中にマウス右ボタンがクリックされたときのサブルーチン
@@ -414,8 +664,17 @@ return
     mx = getMousePosX()
     my = getMousePosY()
 
-    if mode_seltank {
-        mode_seltank = false
+    if mode_focus_castle {
+        mode_focus_castle = false
+    }
+
+    if mode_focus_tank && mode_command_ahead == false{
+        mode_focus_tank = false
+        listClear selected_tank_index_list
+    }
+
+    if mode_command_ahead {
+        mode_command_ahead = false
     }
 return
 
@@ -425,10 +684,84 @@ return
         if tank_used(cnt) == false {
             tank_used(cnt) = true
             copyStatus cnt, launch_tank_id
-            tank_x(cnt) = player_castle_x
-            tank_y(cnt) = player_castle_y
             tank_angle(cnt) = (3.0 * M_PI) / 2.0
+            tank_stop(cnt) = true
+            launch_id = cnt
+            gosub *game_playertank_launch_placement
             break
         }
     loop
+return
+
+*game_playertank_launch_placement
+    tank_x(launch_id) = player_castle_x
+    tank_y(launch_id) = player_castle_y - 128
+    launch_counter = 1000
+    repeat PLAYER_COUNT + ENEMY_COUNT
+        if launch_id == cnt: continue
+        if launch_counter == 0 {
+            log_publish = true
+            log_buffer = "出撃可能な範囲がありません"
+            tank_used(launch_id) = false
+            break
+        }
+        if tank_used(cnt) && hitRect(tank_x(launch_id) - 16, tank_y(launch_id) - 16, tank_x(launch_id) + 16, tank_y(launch_id) + 16, tank_x(cnt) - 16, tank_y(cnt) - 16, tank_x(cnt) + 16, tank_y(cnt) + 16) {
+            rand_angle = deg2rad(rnd(360))
+            rand_r = 32 + rnd(128 - 32)
+            tank_x(launch_id) = cos(rand_angle) * rand_r + player_castle_x
+            tank_y(launch_id) = sin(rand_angle) * rand_r + player_castle_y
+            tank_target_x(launch_id) = cos(rand_angle) * rand_r + player_castle_x
+            tank_target_y(launch_id) = sin(rand_angle) * rand_r + player_castle_y
+            launch_counter--
+            continue 0
+        }
+    loop
+return
+
+*game_area_select_player_tank
+    listClear selected_tank_index_list
+    repeat PLAYER_COUNT
+        if tank_used(cnt) == false: continue
+        if inRect(tank_x(cnt), tank_y(cnt), select_area_x1, select_area_y1, select_area_x2, select_area_y2) {
+            listAppend selected_tank_index_list, cnt
+        }
+    loop
+return
+
+*game_init_minimap
+    gsel MINIMAP_HANDLER
+    repeat field_height_max / MAPCHIP_EDGE_POINT
+        x = cnt
+        repeat field_width_max / MAPCHIP_EDGE_POINT
+            y = cnt
+            color 0, 255, 0
+            pset x, y
+        loop
+    loop
+    gsel 0
+return
+
+*game_draw_minimap
+    // 基準点
+    minimap_base_x = WINDOW_WIDTH / 2 - (field_width_max / MAPCHIP_EDGE_POINT) / 2
+    minimap_base_y = WINDOW_HEIGHT / 2 - (field_height_max / MAPCHIP_EDGE_POINT) / 2
+    // マップ描画
+    pos minimap_base_x, minimap_base_y
+    gmode 0
+    gcopy MINIMAP_HANDLER, 0, 0, field_width_max / MAPCHIP_EDGE_POINT, field_height_max / MAPCHIP_EDGE_POINT
+    // 戦車の位置の描画
+    repeat PLAYER_COUNT + ENEMY_COUNT
+        if tank_used(cnt) {
+            if cnt < ENEMY_BASE_INDEX {
+                color 0, 0, 255
+            } else {
+                color 255, 0, 0
+            }
+            psetBig minimap_base_x + tank_x(cnt) / double(MAPCHIP_EDGE_POINT), minimap_base_y + tank_y(cnt) / double(MAPCHIP_EDGE_POINT), 2
+        }
+    loop
+    // 自陣描画
+    color 0, 0, 0
+    psetBig minimap_base_x + player_castle_x / double(MAPCHIP_EDGE_POINT), minimap_base_y + player_castle_y / double(MAPCHIP_EDGE_POINT), 2
+    gmode 2
 return
