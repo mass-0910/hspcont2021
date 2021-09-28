@@ -1,7 +1,7 @@
 #include "hspdef.as"
 
-#define global WINDOW_WIDTH 640
-#define global WINDOW_HEIGHT 480
+#define global WINDOW_WIDTH 1280
+#define global WINDOW_HEIGHT 960
 #define global MAPCHIP_HANDLER 1
 #define global DIALOG_HANDLER 5
 #define global MINIMAP_HANDLER 50
@@ -13,6 +13,7 @@
 #define global CURSOR_HANDLER 6
 #define global COMMAND_BADGE_HANDLER 7
 #define global MAPBUTTON_HANDLER 8
+#define global FORMATIONBUTTON_HANDLER 9
 #define global MES_SIZE_HANDLER 51
 #define global PLAYER_COUNT 64
 #define global ENEMY_COUNT 64
@@ -21,6 +22,9 @@
 #define global MAPCHIP_ROOT_MAX 300
 #define global MAPCHIP_EDGE_POINT 16
 #define global TANKTYPE_MAX 5
+#define global COMPAMYFORMATION_VERTICAL   0
+#define global COMPAMYFORMATION_HORIZONTAL 1
+#define global COMPAMYFORMATION_PANZERKEIL 2
 
 #define global true 1
 #define global false 0
@@ -211,65 +215,111 @@ right_trigger = false
 #global
 
 // int型可変長リスト風モジュール
-#module intList list, len, empty
-    #modinit int maxLength, int emptyval
+#module intList list, p
+    #modinit int maxLength
         dim list, maxLength
-        len = maxLength
-        empty = emptyval
-        repeat len
-            list(cnt) = emptyval
-        loop
+        maxlen = maxLength
+        p = 0
     return
 
     #modcfunc listGet int index
+        if index >= p: return 0
         return list(index)
 
     #modfunc listSet int index, int val
+        if index >= p: return
         list(index) = val
     return
 
     #modcfunc listLen
-        count = 0
-        repeat len
-            if list(cnt) == empty: break
-            count++
-        loop
-        return count
+        return p
 
     #modfunc listAppend int val
-        repeat len
-            if list(cnt) == empty {
-                list(cnt) = val
-                break
-            }
-        loop
+        list(p) = val
+        p++
     return
 
     #modfunc listRemoveAt int index
-        repeat len - index - 1, index
+        if index >= p: return
+        repeat p - index - 1, index
             list(cnt) = list(cnt + 1)
         loop
-        list(len - 1) = empty
+        p--
     return
 
     #modfunc listClear
-        repeat len
-            if list(cnt) == empty: break
-            list(cnt) = empty
-        loop
+        p = 0
     return
 
     #modcfunc listContains int val
         retval = false
-        repeat len
-            title str(empty)
-            if list(cnt) == empty: break
+        repeat p
             if list(cnt) == val {
                 retval = true
                 break
             }
         loop
         return retval
+
+    #modfunc listShuffle
+        repeat p
+            r         = cnt + rnd(p - cnt)
+            temp      = list(r)
+            list(r)   = list(cnt)
+            list(cnt) = temp
+        loop
+    return
+#global
+
+// 中隊戦車(隊長以外)が居るべき場所を返す
+#module
+    #deffunc companyFormationPosition var x, var y, int me, double space
+        leader_x = tank_x@(tank_company_leader@(me))
+        leader_y = tank_y@(tank_company_leader@(me))
+        leader_angle = tank_angle@(tank_company_leader@(me))
+        switch tank_company_formation@(me)
+            case COMPAMYFORMATION_VERTICAL: // 縦隊
+                x = leader_x - cos(leader_angle) * space * double(tank_company_number@(me))
+                y = leader_y - sin(leader_angle) * space * double(tank_company_number@(me))
+                swbreak
+            case COMPAMYFORMATION_HORIZONTAL: // 横隊
+                if tank_company_number@(me) \ 2 {
+                    LorR = -1.0
+                } else {
+                    LorR = 1.0
+                }
+                x = leader_x + cos(leader_angle + ((M_PI / 2.0) * LorR)) * space * double((tank_company_number@(me) - 1) / 2 + 1)
+                y = leader_y + sin(leader_angle + ((M_PI / 2.0) * LorR)) * space * double((tank_company_number@(me) - 1) / 2 + 1)
+                swbreak
+            case COMPAMYFORMATION_PANZERKEIL: // パンツァーカイル
+                if tank_company_number@(me) \ 2 {
+                    LorR = -1.0
+                } else {
+                    LorR = 1.0
+                }
+                x = leader_x + cos(leader_angle + ((M_PI * 3.0 / 4.0) * LorR)) * space * double((tank_company_number@(me) - 1) / 2 + 1)
+                y = leader_y + sin(leader_angle + ((M_PI * 3.0 / 4.0) * LorR)) * space * double((tank_company_number@(me) - 1) / 2 + 1)
+                swbreak
+        swend
+    return
+#global
+
+#module
+    #deffunc mesExpand str string, int r, int g, int b, int fontsize, int fontstyle, double expand, var size_width, var size_height
+        draw_handler = ginfo_sel
+        gsel MES_SIZE_HANDLER
+        pos 0, 0
+        color 0, 0, 0
+        boxf
+        font "ＭＳ ゴシック", fontsize, fontstyle
+        objcolor 1, 1, 1
+        color r, g, b
+        mes string, mesopt_outline
+        size_width = ginfo_mesx
+        size_height = ginfo_mesy
+        gsel draw_handler
+        celput MES_SIZE_HANDLER, , expand, expand
+    return
 #global
 
 // プログラムスタート時の初期化
@@ -296,15 +346,18 @@ right_trigger = false
     celload "..\\resources\\image\\cursor.png", CURSOR_HANDLER
     celload "..\\resources\\image\\commandbadge.png", COMMAND_BADGE_HANDLER
     celload "..\\resources\\image\\mapbutton.png", MAPBUTTON_HANDLER
+    celload "..\\resources\\image\\formation.png", FORMATIONBUTTON_HANDLER
     celdiv MAPCHIP_HANDLER, 18, 18, 0, 0
     celdiv TANK_HANDLER, 32, 32, 16, 16
     celdiv TANK_BADGE_HANDLER, 64, 64, 0, 0
     celdiv CURSOR_HANDLER, 64, 64, 32, 32
     celdiv COMMAND_BADGE_HANDLER, 64, 64, 0, 0
+    celdiv FORMATIONBUTTON_HANDLER, 64, 64, 0, 0
 
     // 配列の定義
     // tank: 戦車を表す属性(味方も敵もここで定義)
     dim tank_used, PLAYER_COUNT + ENEMY_COUNT
+    dim tank_selected, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_x, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_y, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_target_x, PLAYER_COUNT + ENEMY_COUNT
@@ -322,6 +375,11 @@ right_trigger = false
     ddim tank_visible_range, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_range, PLAYER_COUNT + ENEMY_COUNT
     dim tank_id, PLAYER_COUNT + ENEMY_COUNT
+    dim tank_company, PLAYER_COUNT + ENEMY_COUNT
+    dim tank_company_number, PLAYER_COUNT + ENEMY_COUNT
+    dim tank_company_formation, PLAYER_COUNT + ENEMY_COUNT
+    dim tank_company_leader, PLAYER_COUNT + ENEMY_COUNT
+    ddim tank_company_speed, PLAYER_COUNT + ENEMY_COUNT
     // mapchip: マップチップの属性
     dim mapchip_div_id, MAPCHIP_ROOT_MAX, MAPCHIP_ROOT_MAX
     // seltank: 出撃戦車ダイアログの属性
@@ -341,7 +399,7 @@ right_trigger = false
     ddim tankdata_range, TANKTYPE_MAX
 
     // モジュール変数の初期化
-    newmod selected_tank_index_list, intList, 64, 9999999999999
+    newmod selected_tank_index_list, intList, 64
 
     // 戦車情報のロード
     notesel note
@@ -371,11 +429,11 @@ right_trigger = false
         tank_used(cnt) = false
     loop
 
+/********************************************* ゲーム本体 ************************************************/
+
 // ゲーム初期化
 *gameinit
-    ; notesel fieldtext
-    ; noteload ""
-
+    // フィールド情報のロード
     //TODO: とりあえず
     repeat MAPCHIP_ROOT_MAX
         y = cnt
@@ -392,30 +450,38 @@ right_trigger = false
     enemy_castle_x = (double(MAPCHIP_ROOT_MAX) * double(MAPCHIP_EDGE_POINT)) / 2.0
     enemy_castle_y = (25.0 * double(MAPCHIP_EDGE_POINT)) - double(MAPCHIP_EDGE_POINT) / 2.0
 
+    // カメラの初期化
     camera_x = player_castle_x
     camera_y = player_castle_y
     camera_expand = 1.0
 
+    // ダイアログ透過率
     dialog_alpha = 0
 
-    click_counter = 0
-
+    // モード指定子の初期化
     mode_focus_castle = false
     mode_focus_tank = false
     mode_dialog = false
     mode_map = false
     mode_command_ahead = false
+    mode_command_formation = false
 
-    log_publish = false
-    log_buffer = ""
-    log_timer = 0
+    // ログ関連変数の初期化
+    log_publish = false // ログを出力する際にtrueにする
+    log_buffer = "" // ログ内容
+    log_timer = 0 // ログを出力するループ時間
 
+    // 範囲選択変数の初期化
     select_area_x1 = -1
     select_area_y1 = -1
     select_area_x2 = -1
     select_area_y2 = -1
 
+    // ゲームループカウンターの初期化
     counter = 0
+
+    // 中隊番号の初期化
+    company_id = 0
 
 // ゲームループ
 *gameloop
@@ -424,6 +490,18 @@ right_trigger = false
     // 何らかのモードであるかどうか
     not_some_mode = mode_focus_castle == false && mode_focus_tank == false && mode_map == false
 
+    // 描画
+    gosub *gamedraw
+
+    // 更新
+    gosub *gameupdate
+
+    redraw 1
+    await 16
+goto *gameloop
+
+// ゲームの画面描画
+*gamedraw
     // 背景描画
     base_x = int((camera_x - double(WINDOW_WIDTH / 2) / camera_expand) / MAPCHIP_EDGE_POINT)
     base_y = int((camera_y - double(WINDOW_HEIGHT / 2) / camera_expand) / MAPCHIP_EDGE_POINT)
@@ -471,14 +549,18 @@ right_trigger = false
     // 戦車描画
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) {
+            // 戦車画像描画
             posRelative tank_x(cnt), tank_y(cnt)
             celput tank_image_handler(cnt), 0, camera_expand, camera_expand, tank_angle(cnt)
-            objcolor 0, 0, 0
-            color 255, 255, 255
-            posRelative tank_x(cnt), tank_y(cnt) + double(tank_image_height(cnt) / 2)
-            px = ginfo_cx : py = ginfo_cy
-            pos px - double(getMesWidth(tankdata_name(tank_id(cnt))) / 2), py
-            mes tankdata_name(tank_id(cnt)), mesopt_outline
+            // 戦車の名前を描画
+            if tank_selected(cnt) {
+                objcolor 0, 0, 0
+                color 255, 255, 255
+                posRelative tank_x(cnt), tank_y(cnt) + double(tank_image_height(cnt) / 2)
+                px = ginfo_cx : py = ginfo_cy
+                pos px - double(getMesWidth(tankdata_name(tank_id(cnt))) / 2), py
+                mes tankdata_name(tank_id(cnt)), mesopt_outline
+            }
         }
     loop
 
@@ -501,19 +583,10 @@ right_trigger = false
 
     // ログ描画
     if log_timer > 0 {
-        gsel MES_SIZE_HANDLER
-        pos 0, 0
-        color 0, 0, 0
-        boxf
-        font "ＭＳ ゴシック", 15, 1
-        objcolor 1, 1, 1
-        color 255, 255, 255
-        mes log_buffer, mesopt_outline
-        log_width = ginfo_mesx
-        log_height = ginfo_mesy
-        gsel 0
+        pos -100, -100
+        mesExpand log_buffer, 255, 255, 255, 15, 1, log_size, log_width, log_height
         pos double(WINDOW_WIDTH / 2) - double(log_width / 2) * log_size, 4
-        celput MES_SIZE_HANDLER, , log_size, log_size
+        mesExpand log_buffer, 255, 255, 255, 15, 1, log_size, log_width, log_height
         closerSpeedy log_size, 1.0, 0.3
 
         log_timer--
@@ -598,7 +671,7 @@ right_trigger = false
         line WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
         line WINDOW_WIDTH - 10, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 70
         // 戦車ボタン描画
-        repeat 4
+        repeat 5
             pos 74 * cnt + 10, WINDOW_HEIGHT - 82
             celput COMMAND_BADGE_HANDLER, cnt
         loop
@@ -609,6 +682,24 @@ right_trigger = false
         gosub *game_draw_minimap
     }
 
+    // 陣形選択モードのとき、フォーメーション選択ダイアログを描画
+    if mode_command_formation {
+        color 0, 0, 0
+        boxf WINDOW_WIDTH / 2 - 232 / 2, WINDOW_HEIGHT / 2 - 104 / 2, WINDOW_WIDTH / 2 + 232 / 2, WINDOW_HEIGHT / 2 + 104 / 2
+        font "ＭＳ ゴシック", 15
+        pos WINDOW_WIDTH / 2 - 232 / 2 + 5, WINDOW_HEIGHT / 2 - 104 / 2 + 5
+        color 255, 255, 255
+        mes "フォーメーション選択"
+        font "ＭＳ ゴシック", 9
+        repeat 3
+            pos WINDOW_WIDTH / 2 - 232 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30
+            celput FORMATIONBUTTON_HANDLER, cnt
+        loop
+    }
+return
+
+// ゲームの更新
+*gameupdate
     // フォーカスモードでないときマウス操作
     if not_some_mode {
         // カメラ操作(キーボード)
@@ -700,15 +791,35 @@ right_trigger = false
         gosub *game_mouserightclicked
     }
 
-    //
-
     // 戦車の動き
     repeat PLAYER_COUNT + ENEMY_COUNT
-        if tank_used(cnt) && tank_stop(cnt) == false && tank_target_selected(cnt) {
-            tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
-            tank_x(cnt) += cos(tank_angle(cnt)) * tank_speed(cnt)
-            tank_y(cnt) += sin(tank_angle(cnt)) * tank_speed(cnt)
-            if distance(tank_x(cnt), tank_y(cnt), tank_target_x(cnt), tank_target_y(cnt)) < 3 {
+        if tank_used(cnt) && tank_stop(cnt) == false {
+            if tank_target_selected(cnt) && tank_company(cnt) == -1 { // 中隊に属していないとき
+                tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
+                tank_xv = cos(tank_angle(cnt)) * tank_speed(cnt)
+                tank_yv = sin(tank_angle(cnt)) * tank_speed(cnt)
+            } else: if tank_company(cnt) != -1 { // 中隊に属しているとき
+                if tank_company_leader(cnt) = cnt { // 隊長のとき
+                    tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
+                    tank_xv = cos(tank_angle(cnt)) * tank_company_speed(cnt)
+                    tank_yv = sin(tank_angle(cnt)) * tank_company_speed(cnt)
+                } else { // 隊長でないとき
+                    companyFormationPosition tank_target_x(cnt), tank_target_y(cnt), cnt, 64
+                    tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
+                    if distance(tank_x(cnt), tank_y(cnt), tank_target_x(cnt), tank_target_y(cnt)) < 3 {
+                        tank_xv = cos(tank_angle(cnt)) * tank_company_speed(cnt)
+                        tank_yv = sin(tank_angle(cnt)) * tank_company_speed(cnt)
+                    } else {
+                        tank_xv = cos(tank_angle(cnt)) * tank_speed(cnt)
+                        tank_yv = sin(tank_angle(cnt)) * tank_speed(cnt)
+                    }
+                }
+            }
+            if distance(tank_x(cnt), tank_y(cnt), tank_target_x(cnt), tank_target_y(cnt)) >= 3 {
+                tank_x(cnt) += tank_xv
+                tank_y(cnt) += tank_yv
+            }
+            if distance(tank_x(cnt), tank_y(cnt), tank_target_x(cnt), tank_target_y(cnt)) < 3 && (tank_company(cnt) == -1 || (tank_company(cnt) != -1 && tank_company_number(cnt) == 0)) {
                 tank_stop(cnt) = true
                 log_buffer = "戦車が目的地に到着しました"
                 log_publish = true
@@ -717,10 +828,9 @@ right_trigger = false
         }
     loop
 
-    redraw 1
-    await 16
+    // メインループカウンター
     counter++
-    goto *gameloop
+return
 
 // ゲーム中にマウス左ボタンがクリックされたときのサブルーチン
 *game_mouseleftclicked
@@ -741,7 +851,7 @@ right_trigger = false
         }
     }
 
-    // 戦車選択ダイアログでのマウスの動作
+    // 自陣ダイアログでのマウスの動作
     if mode_focus_castle {
         if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //バツボタンが押されたとき
             mode_focus_castle = false
@@ -778,6 +888,9 @@ right_trigger = false
                             tank_stop(listGet(selected_tank_index_list, cnt)) = true
                         loop
                         swbreak
+                    case 4: // 陣形選択
+                        mode_command_formation = true
+                        swbreak
                 swend
             }
         loop
@@ -789,19 +902,48 @@ right_trigger = false
             // 選択された戦車の重心を求める
             selected_tank_gx = 0.0
             selected_tank_gy = 0.0
+            c = 0
             repeat listLen(selected_tank_index_list)
-                selected_tank_gx += tank_x(listGet(selected_tank_index_list, cnt))
-                selected_tank_gy += tank_y(listGet(selected_tank_index_list, cnt))
+                if tank_company(listGet(selected_tank_index_list, cnt)) == -1 { // 中隊に属していないとき
+                    selected_tank_gx += tank_x(listGet(selected_tank_index_list, cnt))
+                    selected_tank_gy += tank_y(listGet(selected_tank_index_list, cnt))
+                    c++
+                }
             loop
-            selected_tank_gx /= double(listLen(selected_tank_index_list))
-            selected_tank_gy /= double(listLen(selected_tank_index_list))
+            if c != 0 {
+                selected_tank_gx /= double(c)
+                selected_tank_gy /= double(c)
+            }
             repeat listLen(selected_tank_index_list)
-                tank_target_x(listGet(selected_tank_index_list, cnt)) = double(mousex * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_x * MAPCHIP_EDGE_POINT) + (tank_x(listGet(selected_tank_index_list, cnt)) - selected_tank_gx)
-                tank_target_y(listGet(selected_tank_index_list, cnt)) = double(mousey * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_y * MAPCHIP_EDGE_POINT) + (tank_y(listGet(selected_tank_index_list, cnt)) - selected_tank_gy)
+                // 選択中の戦車が中隊に属しており、かつ選択された戦車の中にその隊長がいないとき、戦車を中隊から外す
+                if tank_company(listGet(selected_tank_index_list, cnt)) != -1 && listContains(selected_tank_index_list, tank_company_leader(listGet(selected_tank_index_list, cnt))) == false {
+                    tank_company(listGet(selected_tank_index_list, cnt)) = -1
+                }
+                if tank_company(listGet(selected_tank_index_list, cnt)) == -1 { // 中隊に属していないとき
+                    tank_target_x(listGet(selected_tank_index_list, cnt)) = double(mousex * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_x * MAPCHIP_EDGE_POINT) + (tank_x(listGet(selected_tank_index_list, cnt)) - selected_tank_gx)
+                    tank_target_y(listGet(selected_tank_index_list, cnt)) = double(mousey * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_y * MAPCHIP_EDGE_POINT) + (tank_y(listGet(selected_tank_index_list, cnt)) - selected_tank_gy)
+                } else: if tank_company_leader(listGet(selected_tank_index_list, cnt)) == listGet(selected_tank_index_list, cnt) { // 隊長のとき
+                    tank_target_x(listGet(selected_tank_index_list, cnt)) = double(mousex * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_x * MAPCHIP_EDGE_POINT)
+                    tank_target_y(listGet(selected_tank_index_list, cnt)) = double(mousey * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_y * MAPCHIP_EDGE_POINT)
+                    title str(tank_target_x(listGet(selected_tank_index_list, cnt))) + " " + str(tank_target_y(listGet(selected_tank_index_list, cnt)))
+                } else { // 隊長でないとき
+                    companyFormationPosition tank_target_x(listGet(selected_tank_index_list, cnt)), tank_target_y(listGet(selected_tank_index_list, cnt)), cnt, 64
+                }
                 tank_stop(listGet(selected_tank_index_list, cnt)) = false
                 tank_target_selected(listGet(selected_tank_index_list, cnt)) = true
             loop
         }
+    }
+
+    // フォーメーション選択
+    if mode_command_formation {
+        repeat 3
+            if inRect(mousex, mousey, WINDOW_WIDTH / 2 - 232 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30, WINDOW_WIDTH / 2 - 232 / 2 + (74 * cnt) + 10 + 64, WINDOW_HEIGHT / 2 - 104 / 2 + 30 + 64) {
+                formation = cnt
+                gosub *game_make_company
+                mode_command_formation = false
+            }
+        loop
     }
 
     // 選択範囲指定の最初地点の設定
@@ -822,13 +964,22 @@ return
         mode_map = false
     }
 
-    if mode_focus_tank && mode_command_ahead == false{
+    if mode_focus_tank && mode_command_ahead == false && mode_command_formation == false{
         mode_focus_tank = false
         listClear selected_tank_index_list
+        repeat PLAYER_COUNT
+            tank_selected(cnt) = false
+        loop
+    }
+
+    if mode_command_formation {
+        mode_command_formation = false
+        return
     }
 
     if mode_command_ahead {
         mode_command_ahead = false
+        return
     }
 return
 
@@ -840,6 +991,7 @@ return
             copyStatus cnt, launch_tank_id
             tank_angle(cnt) = (3.0 * M_PI) / 2.0
             tank_stop(cnt) = true
+            tank_company(cnt) = -1
             launch_id = cnt
             gosub *game_playertank_launch_placement
             break
@@ -847,6 +999,7 @@ return
     loop
 return
 
+// 出現する戦車の場所を決める
 *game_playertank_launch_placement
     tank_x(launch_id) = player_castle_x
     tank_y(launch_id) = player_castle_y - 128
@@ -862,6 +1015,7 @@ return
         if tank_used(cnt) && hitRect(tank_x(launch_id) - 16, tank_y(launch_id) - 16, tank_x(launch_id) + 16, tank_y(launch_id) + 16, tank_x(cnt) - 16, tank_y(cnt) - 16, tank_x(cnt) + 16, tank_y(cnt) + 16) {
             rand_angle = deg2rad(rnd(360))
             rand_r = 32 + rnd(128 - 32)
+            tank_selected(launch_id) = false
             tank_x(launch_id) = cos(rand_angle) * rand_r + player_castle_x
             tank_y(launch_id) = sin(rand_angle) * rand_r + player_castle_y
             tank_target_x(launch_id) = cos(rand_angle) * rand_r + player_castle_x
@@ -873,16 +1027,19 @@ return
     loop
 return
 
+// 範囲選択した際の処理
 *game_area_select_player_tank
     listClear selected_tank_index_list
     repeat PLAYER_COUNT
         if tank_used(cnt) == false: continue
         if inRect(tank_x(cnt), tank_y(cnt), select_area_x1, select_area_y1, select_area_x2, select_area_y2) {
             listAppend selected_tank_index_list, cnt
+            tank_selected(cnt) = true
         }
     loop
 return
 
+// ミニマップの初期化
 *game_init_minimap
     gsel MINIMAP_HANDLER
     repeat field_height_max / MAPCHIP_EDGE_POINT
@@ -896,6 +1053,7 @@ return
     gsel 0
 return
 
+// ミニマップの描画
 *game_draw_minimap
     // 基準点
     minimap_base_x = WINDOW_WIDTH / 2 - (field_width_max / MAPCHIP_EDGE_POINT) / 2
@@ -908,12 +1066,8 @@ return
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) {
             if cnt < ENEMY_BASE_INDEX {
-                if listContains(selected_tank_index_list, cnt) {
-                    if (counter / 20) \ 2 {
-                        color 255, 255, 0
-                    } else {
-                        color 0, 0, 255
-                    }
+                if tank_selected(cnt) && (counter / 20) \ 2 {
+                    color 255, 255, 0
                 } else {
                     color 0, 0, 255
                 }
@@ -927,4 +1081,28 @@ return
     color 0, 0, 0
     psetBig minimap_base_x + player_castle_x / double(MAPCHIP_EDGE_POINT), minimap_base_y + player_castle_y / double(MAPCHIP_EDGE_POINT), 2
     gmode 2
+return
+
+// 中隊への参加処理
+*game_make_company
+    listShuffle selected_tank_index_list
+    speed_min = 100.0
+    repeat listLen(selected_tank_index_list)
+        if speed_min > tank_speed(listGet(selected_tank_index_list, cnt)) {
+            speed_min = tank_speed(listGet(selected_tank_index_list, cnt))
+        }
+    loop
+    repeat listLen(selected_tank_index_list)
+        tank_company(listGet(selected_tank_index_list, cnt)) = company_id
+        tank_company_number(listGet(selected_tank_index_list, cnt)) = cnt
+        tank_company_speed(listGet(selected_tank_index_list, cnt)) = speed_min
+        if cnt != 0 {
+            tank_stop(listGet(selected_tank_index_list, cnt)) = false
+            tank_target_selected(listGet(selected_tank_index_list, cnt)) = true
+        }
+        tank_company_formation(listGet(selected_tank_index_list, cnt)) = formation
+        tank_company_leader(listGet(selected_tank_index_list, cnt)) = listGet(selected_tank_index_list, 0)
+    loop
+
+    company_id++
 return
