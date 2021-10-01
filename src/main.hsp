@@ -29,6 +29,7 @@
 #define global COMPAMYFORMATION_VERTICAL   0
 #define global COMPAMYFORMATION_HORIZONTAL 1
 #define global COMPAMYFORMATION_PANZERKEIL 2
+#define global COMPAMYFORMATION_OFF        3
 #define global OPERATION_ATTACK_TO_NEAR      0
 #define global OPERATION_ATTACK_TO_STRONGER  1
 #define global OPERATION_ATTACK_TO_SPECIFIED 2
@@ -668,6 +669,12 @@ goto *gameloop
             px = ginfo_cx : py = ginfo_cy
             pos px - double(getMesWidth(tankdata_name(tank_id(i))) / 2), py
             mes tankdata_name(tank_id(i)), mesopt_outline
+            // 戦車のHPバーを表示
+            color 255, 0, 0
+            boxfRelative tank_x(i) - 16.0, tank_y(i) - double(tank_image_height(i) / 2) - 6.0, tank_x(i) - 16.0 + 32.0 * (double(tank_hp(i)) / double(tankdata_hp(tank_id(i)))), tank_y(i) - double(tank_image_height(i) / 2)
+            // リロードバーを描画
+            color 255, 255, 0
+            boxfRelative tank_x(i) - 16.0, tank_y(i) - double(tank_image_height(i) / 2) - 2.0, tank_x(i) - 16.0 + 32.0 * (1.0 - double(tank_reload_time(i)) / double(tankdata_reload_time(tank_id(i)))), tank_y(i) - double(tank_image_height(i) / 2)
             // 視認範囲を描画
             color 0, 0, 255
             circleRelative tank_x(i) - tank_visible_range(i), tank_y(i) - tank_visible_range(i), tank_x(i) + tank_visible_range(i), tank_y(i) + tank_visible_range(i)
@@ -815,14 +822,14 @@ goto *gameloop
     // 陣形選択モードのとき、フォーメーション選択ダイアログを描画
     if mode_command_formation {
         color 0, 0, 0
-        boxf WINDOW_WIDTH / 2 - 232 / 2, WINDOW_HEIGHT / 2 - 104 / 2, WINDOW_WIDTH / 2 + 232 / 2, WINDOW_HEIGHT / 2 + 104 / 2
+        boxf WINDOW_WIDTH / 2 - 306 / 2, WINDOW_HEIGHT / 2 - 104 / 2, WINDOW_WIDTH / 2 + 306 / 2, WINDOW_HEIGHT / 2 + 104 / 2
         font "ＭＳ ゴシック", 15
-        pos WINDOW_WIDTH / 2 - 232 / 2 + 5, WINDOW_HEIGHT / 2 - 104 / 2 + 5
+        pos WINDOW_WIDTH / 2 - 306 / 2 + 5, WINDOW_HEIGHT / 2 - 104 / 2 + 5
         color 255, 255, 255
         mes "フォーメーション選択"
         font "ＭＳ ゴシック", 9
-        repeat 3
-            pos WINDOW_WIDTH / 2 - 232 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30
+        repeat 4
+            pos WINDOW_WIDTH / 2 - 306 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30
             celput FORMATIONBUTTON_HANDLER, cnt
         loop
     }
@@ -1021,6 +1028,15 @@ return
         }
     loop
 
+    // 中隊に属しており、隊長が自身の中隊に属していないとき、自分を中隊から外す
+    repeat PLAYER_COUNT + ENEMY_COUNT
+        if tank_company(cnt) != -1 {
+           if tank_company(tank_company_leader(cnt)) != tank_company(cnt) {
+               tank_company(cnt) = -1
+           }
+        }
+    loop
+
     // 戦車の死亡確認
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) && tank_hp(cnt) <= 0 {
@@ -1097,7 +1113,9 @@ return
                         swbreak
                     case 1: // 動く
                         repeat listLen(selected_tank_index_list)
-                            tank_stop(listGet(selected_tank_index_list, cnt)) = false
+                            if tank_target_selected(listGet(selected_tank_index_list, cnt)) {
+                                tank_stop(listGet(selected_tank_index_list, cnt)) = false
+                            }
                         loop
                         swbreak
                     case 2: // 停まる
@@ -1155,8 +1173,8 @@ return
 
     // フォーメーション選択
     if mode_command_formation {
-        repeat 3
-            if inRect(mousex, mousey, WINDOW_WIDTH / 2 - 232 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30, WINDOW_WIDTH / 2 - 232 / 2 + (74 * cnt) + 10 + 64, WINDOW_HEIGHT / 2 - 104 / 2 + 30 + 64) {
+        repeat 4
+            if inRect(mousex, mousey, WINDOW_WIDTH / 2 - 306 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30, WINDOW_WIDTH / 2 - 306 / 2 + (74 * cnt) + 10 + 64, WINDOW_HEIGHT / 2 - 104 / 2 + 30 + 64) {
                 formation = cnt
                 gosub *game_make_company
                 mode_command_formation = false
@@ -1245,6 +1263,9 @@ return
 *game_playertank_launch_placement
     tank_x(launch_id) = player_castle_x
     tank_y(launch_id) = player_castle_y - 128
+    tank_target_x(launch_id) = player_castle_x
+    tank_target_y(launch_id) = player_castle_y - 128
+    tank_target_selected(launch_id) = false
     launch_counter = 1000
     repeat PLAYER_COUNT + ENEMY_COUNT
         if launch_id == cnt: continue
@@ -1262,7 +1283,6 @@ return
             tank_y(launch_id) = sin(rand_angle) * rand_r + player_castle_y
             tank_target_x(launch_id) = cos(rand_angle) * rand_r + player_castle_x
             tank_target_y(launch_id) = sin(rand_angle) * rand_r + player_castle_y
-            tank_target_selected(launch_id) = false
             launch_counter--
             continue 0
         }
@@ -1343,6 +1363,10 @@ return
         }
     loop
     repeat listLen(selected_tank_index_list)
+        if formation == COMPAMYFORMATION_OFF { // 選択中の戦車を中隊から外す
+            tank_company(listGet(selected_tank_index_list, cnt)) = -1
+            continue
+        }
         tank_company(listGet(selected_tank_index_list, cnt)) = company_id
         if hp_max_index == cnt {
             tank_company_number(listGet(selected_tank_index_list, cnt)) = 0
