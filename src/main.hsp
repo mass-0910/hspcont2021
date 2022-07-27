@@ -78,28 +78,28 @@
 #global
 
 // マウスがクリックされた瞬間だけtrueを返す関数
-left_trigger = false
-right_trigger = false
 #module
+    left_trigger = false
+    right_trigger = false
     #defcfunc mouseLeftClicked
         getkey a, 1
-        if left_trigger@ == false && a {
-            left_trigger@ = true
+        if left_trigger == false && a {
+            left_trigger = true
             return true
         }
         if a == 0 {
-            left_trigger@ = false
+            left_trigger = false
         }
         return false
 
     #defcfunc mouseRightClicked
         getkey a, 2
-        if right_trigger@ == false && a {
-            right_trigger@ = true
+        if right_trigger == false && a {
+            right_trigger = true
             return true
         }
         if a == 0 {
-            right_trigger@ = false
+            right_trigger = false
         }
         return false
 #global
