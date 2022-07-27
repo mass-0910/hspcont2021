@@ -1,3 +1,4 @@
+#runtime "hsp3utf"
 #include "hspdef.as"
 
 #define global WINDOW_WIDTH 640
@@ -38,7 +39,7 @@
 #define global true 1
 #define global false 0
 
-// ƒ}ƒbƒvã‚ÌˆÊ’u‚ğw’è‚µ‚ÄƒJƒŒƒ“ƒgƒ|ƒWƒVƒ‡ƒ“‚ğİ’è‚·‚é–½—ß
+// ãƒãƒƒãƒ—ä¸Šã®ä½ç½®ã‚’æŒ‡å®šã—ã¦ã‚«ãƒ¬ãƒ³ãƒˆãƒã‚¸ã‚·ãƒ§ãƒ³ã‚’è¨­å®šã™ã‚‹å‘½ä»¤
 #module
     #deffunc posRelative double x, double y
         pos (x - camera_x@) * camera_expand@ + WINDOW_WIDTH / 2, (y - camera_y@) * camera_expand@ + WINDOW_HEIGHT / 2
@@ -76,34 +77,34 @@
     return
 #global
 
-// ƒ}ƒEƒX‚ªƒNƒŠƒbƒN‚³‚ê‚½uŠÔ‚¾‚¯true‚ğ•Ô‚·ŠÖ”
-left_trigger = false
-right_trigger = false
+// ãƒã‚¦ã‚¹ãŒã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸç¬é–“ã ã‘trueã‚’è¿”ã™é–¢æ•°
 #module
+    left_trigger = false
+    right_trigger = false
     #defcfunc mouseLeftClicked
         getkey a, 1
-        if left_trigger@ == false && a {
-            left_trigger@ = true
+        if left_trigger == false && a {
+            left_trigger = true
             return true
         }
         if a == 0 {
-            left_trigger@ = false
+            left_trigger = false
         }
         return false
 
     #defcfunc mouseRightClicked
         getkey a, 2
-        if right_trigger@ == false && a {
-            right_trigger@ = true
+        if right_trigger == false && a {
+            right_trigger = true
             return true
         }
         if a == 0 {
-            right_trigger@ = false
+            right_trigger = false
         }
         return false
 #global
 
-// ƒ}ƒEƒX‚ÌˆÊ’u‚ğƒ}ƒbƒvã‚ÌÀ•W‚É•ÏŠ·
+// ãƒã‚¦ã‚¹ã®ä½ç½®ã‚’ãƒãƒƒãƒ—ä¸Šã®åº§æ¨™ã«å¤‰æ›
 #module
     #defcfunc getMousePosX
         return camera_x@ + double(mousex - WINDOW_WIDTH / 2) / camera_expand@
@@ -112,7 +113,7 @@ right_trigger = false
         return camera_y@ + double(mousey - WINDOW_HEIGHT / 2) / camera_expand@
 #global
 
-// ƒoƒbƒtƒ@ã‚Ì‰æ‘œ‚ÌƒTƒCƒY‚ğæ“¾‚·‚éŠÖ”
+// ãƒãƒƒãƒ•ã‚¡ä¸Šã®ç”»åƒã®ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹é–¢æ•°
 #module
     #defcfunc getImageWidth int handler
         draw_handler = ginfo_sel
@@ -129,7 +130,7 @@ right_trigger = false
         return image_height
 #global
 
-// •¶š•`‰æ‚ÌÛ‚ÌƒTƒCƒY‚ğæ“¾‚·‚éŠÖ”
+// æ–‡å­—æç”»ã®éš›ã®ã‚µã‚¤ã‚ºã‚’å–å¾—ã™ã‚‹é–¢æ•°
 #module
     #defcfunc getMesWidth str string
         cpx = ginfo_cx : cpy = ginfo_cy
@@ -148,7 +149,7 @@ right_trigger = false
         return double(mes_height)
 #global
 
-// ‹éŒ`“à‚É“ü‚Á‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ğ”»’è‚·‚éŠÖ”
+// çŸ©å½¢å†…ã«å…¥ã£ã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’åˆ¤å®šã™ã‚‹é–¢æ•°
 #module
     #defcfunc inRect double px, double py, double rx1, double ry1, double rx2, double ry2
         return (px >= rx1 && px <= rx2 && py >= ry1 && py <= ry2) || (px >= rx1 && px <= rx2 && py >= ry2 && py <= ry1) || (px >= rx2 && px <= rx1 && py >= ry1 && py <= ry2) || (px >= rx2 && px <= rx1 && py >= ry2 && py <= ry1)
@@ -157,9 +158,9 @@ right_trigger = false
         return r1x1 <= r2x2 && r2x1 <= r1x2 && r1y1 <= r2y2 && r2y1 <= r1y2
 #global
 
-// •Ï”‚ğ‚ ‚é’l‚ÉüŒ`‚É‹ß‚Ã‚¯‚é
+// å¤‰æ•°ã‚’ã‚ã‚‹å€¤ã«ç·šå½¢ã«è¿‘ã¥ã‘ã‚‹
 #module
-    // ®””Å
+    // æ•´æ•°ç‰ˆ
     #deffunc intCloserTo var v, int x, int speed
         if v > x {
             if v - speed < x {
@@ -176,7 +177,7 @@ right_trigger = false
         }
     return
 
-    // À””Å
+    // å®Ÿæ•°ç‰ˆ
     #deffunc doubleCloserTo var v, double x, double speed
         if v > x {
             if v - speed < x {
@@ -194,20 +195,20 @@ right_trigger = false
     return
 #global
 
-// •Ï”‚ğ‘f‘‚­‚ ‚é’l‚É‹ß‚Ã‚¯‚é(À”‚Ì‚İ)
+// å¤‰æ•°ã‚’ç´ æ—©ãã‚ã‚‹å€¤ã«è¿‘ã¥ã‘ã‚‹(å®Ÿæ•°ã®ã¿)
 #module
     #deffunc closerSpeedy var v, double x, double coeffect
         v += (x - v) * coeffect
     return
 #global
 
-// ‹——£‚ğ‹‚ß‚é
+// è·é›¢ã‚’æ±‚ã‚ã‚‹
 #module
     #defcfunc distance double x1, double y1, double x2, double y2
         return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2))
 #global
 
-// w’è‚µ‚½íÔ—v‘f‚ÉƒXƒe[ƒ^ƒX‚ğƒRƒs[
+// æŒ‡å®šã—ãŸæˆ¦è»Šè¦ç´ ã«ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚’ã‚³ãƒ”ãƒ¼
 #module
     #deffunc copyStatus int index, int id
         tank_id@(index)            = id
@@ -223,7 +224,7 @@ right_trigger = false
     return
 #global
 
-// intŒ^‰Â•Ï’·ƒŠƒXƒg•—ƒ‚ƒWƒ…[ƒ‹
+// intå‹å¯å¤‰é•·ãƒªã‚¹ãƒˆé¢¨ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«
 #module intList list, p
     #modinit int maxLength
         dim list, maxLength
@@ -294,18 +295,18 @@ right_trigger = false
     return
 #global
 
-// ’†‘àíÔ(‘à’·ˆÈŠO)‚ª‹‚é‚×‚«êŠ‚ğ•Ô‚·
+// ä¸­éšŠæˆ¦è»Š(éšŠé•·ä»¥å¤–)ãŒå±…ã‚‹ã¹ãå ´æ‰€ã‚’è¿”ã™
 #module
     #deffunc companyFormationPosition var x, var y, int me, double space
         leader_x = tank_x@(tank_company_leader@(me))
         leader_y = tank_y@(tank_company_leader@(me))
         leader_angle = tank_angle@(tank_company_leader@(me))
         switch tank_company_formation@(me)
-            case COMPAMYFORMATION_VERTICAL: // c‘à
+            case COMPAMYFORMATION_VERTICAL: // ç¸¦éšŠ
                 x = leader_x - cos(leader_angle) * space * double(tank_company_number@(me))
                 y = leader_y - sin(leader_angle) * space * double(tank_company_number@(me))
                 swbreak
-            case COMPAMYFORMATION_HORIZONTAL: // ‰¡‘à
+            case COMPAMYFORMATION_HORIZONTAL: // æ¨ªéšŠ
                 if tank_company_number@(me) \ 2 {
                     LorR = -1.0
                 } else {
@@ -314,7 +315,7 @@ right_trigger = false
                 x = leader_x + cos(leader_angle + ((M_PI / 2.0) * LorR)) * space * double((tank_company_number@(me) - 1) / 2 + 1)
                 y = leader_y + sin(leader_angle + ((M_PI / 2.0) * LorR)) * space * double((tank_company_number@(me) - 1) / 2 + 1)
                 swbreak
-            case COMPAMYFORMATION_PANZERKEIL: // ƒpƒ“ƒcƒ@[ƒJƒCƒ‹
+            case COMPAMYFORMATION_PANZERKEIL: // ãƒ‘ãƒ³ãƒ„ã‚¡ãƒ¼ã‚«ã‚¤ãƒ«
                 if tank_company_number@(me) \ 2 {
                     LorR = -1.0
                 } else {
@@ -334,7 +335,7 @@ right_trigger = false
         pos 0, 0
         color 0, 0, 0
         boxf
-        font "‚l‚r ƒSƒVƒbƒN", fontsize, fontstyle
+        font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", fontsize, fontstyle
         objcolor 1, 1, 1
         color r, g, b
         mes string, mesopt_outline
@@ -345,7 +346,7 @@ right_trigger = false
     return
 #global
 
-// UŒ‚‚É‚æ‚éƒ_ƒ[ƒWŒvZ
+// æ”»æ’ƒã«ã‚ˆã‚‹ãƒ€ãƒ¡ãƒ¼ã‚¸è¨ˆç®—
 #module
     #deffunc attack int from, int to, var damage
         if rnd(10) == 0 {
@@ -358,23 +359,23 @@ right_trigger = false
     return
 #global
 
-// ƒvƒƒOƒ‰ƒ€ƒXƒ^[ƒg‚Ì‰Šú‰»
+// ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã‚¹ã‚¿ãƒ¼ãƒˆæ™‚ã®åˆæœŸåŒ–
 *start
-    //ƒXƒNƒŠ[ƒ“‚Ì‰Šú‰»
+    //ã‚¹ã‚¯ãƒªãƒ¼ãƒ³ã®åˆæœŸåŒ–
     screen 0, WINDOW_WIDTH, WINDOW_HEIGHT
-    font "‚l‚r ƒSƒVƒbƒN", 9
+    font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", 9
     title "Panzer Command"
     gmode 2
 
-    // —”‰Šú‰»
+    // ä¹±æ•°åˆæœŸåŒ–
     randomize
 
-    // ƒoƒbƒtƒ@‚Ì‰Šú‰»
+    // ãƒãƒƒãƒ•ã‚¡ã®åˆæœŸåŒ–
     buffer DIALOG_HANDLER
     buffer MINIMAP_BUFFER, MAPCHIP_ROOT_MAX, MAPCHIP_ROOT_MAX
     buffer MES_SIZE_BUFFER
 
-    // ‘fŞ‚Ìƒ[ƒh
+    // ç´ æã®ãƒ­ãƒ¼ãƒ‰
     celload "..\\resources\\image\\tank.png", TANK_HANDLER
     celload "..\\resources\\image\\mapchip.png", MAPCHIP_HANDLER
     celload "..\\resources\\image\\team.png", BASE_HANDLER
@@ -393,8 +394,8 @@ right_trigger = false
     celdiv FORMATIONBUTTON_HANDLER, 64, 64, 0, 0
     celdiv BULLET_HANDLER, 64, 64, 32, 32
 
-    // ”z—ñ‚Ì’è‹`
-    // tank: íÔ‚ğ•\‚·‘®«(–¡•û‚à“G‚à‚±‚±‚Å’è‹`)
+    // é…åˆ—ã®å®šç¾©
+    // tank: æˆ¦è»Šã‚’è¡¨ã™å±æ€§(å‘³æ–¹ã‚‚æ•µã‚‚ã“ã“ã§å®šç¾©)
     dim tank_used, PLAYER_COUNT + ENEMY_COUNT
     dim tank_selected, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_x, PLAYER_COUNT + ENEMY_COUNT
@@ -431,12 +432,12 @@ right_trigger = false
     dim tank_company_formation, PLAYER_COUNT + ENEMY_COUNT
     dim tank_company_leader, PLAYER_COUNT + ENEMY_COUNT
     ddim tank_company_speed, PLAYER_COUNT + ENEMY_COUNT
-    // mapchip: ƒ}ƒbƒvƒ`ƒbƒv‚Ì‘®«
+    // mapchip: ãƒãƒƒãƒ—ãƒãƒƒãƒ—ã®å±æ€§
     dim mapchip_div_id, MAPCHIP_ROOT_MAX, MAPCHIP_ROOT_MAX
-    // seltank: oŒ‚íÔƒ_ƒCƒAƒƒO‚Ì‘®«
+    // seltank: å‡ºæ’ƒæˆ¦è»Šãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®å±æ€§
     dim seltank_tankbutton_image, 5
     dim seltank_tankbutton_tankid, 5
-    // tankdata: íÔ‚ÌƒXƒe[ƒ^ƒXî•ñ
+    // tankdata: æˆ¦è»Šã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹æƒ…å ±
     sdim tankdata_name, 16, TANKTYPE_MAX
     dim tankdata_image_handler, TANKTYPE_MAX
     dim tankdata_image_width, TANKTYPE_MAX
@@ -450,11 +451,11 @@ right_trigger = false
     ddim tankdata_range, TANKTYPE_MAX
     dim tankdata_reload_time, TANKTYPE_MAX
 
-    // ƒ‚ƒWƒ…[ƒ‹•Ï”‚Ì‰Šú‰»
-    newmod selected_tank_index_list, intList, 64 // ‘I‘ğ’†‚ÌíÔ
-    newmod specified_tank_index_list, intList, 64 // —DæUŒ‚‘ÎÛ‚ÌíÔ
+    // ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å¤‰æ•°ã®åˆæœŸåŒ–
+    newmod selected_tank_index_list, intList, 64 // é¸æŠä¸­ã®æˆ¦è»Š
+    newmod specified_tank_index_list, intList, 64 // å„ªå…ˆæ”»æ’ƒå¯¾è±¡ã®æˆ¦è»Š
 
-    // íÔî•ñ‚Ìƒ[ƒh
+    // æˆ¦è»Šæƒ…å ±ã®ãƒ­ãƒ¼ãƒ‰
     notesel note
     noteload "..\\resources\\textdata\\player_tank_data"
     dim attrs, 9
@@ -478,21 +479,21 @@ right_trigger = false
         tankdata_reload_time(cnt)   = int(attrs(8))
     loop
 
-// ƒQ[ƒ€ƒŠƒXƒ^[ƒg‚Ì‰Šú‰»
+// ã‚²ãƒ¼ãƒ ãƒªã‚¹ã‚¿ãƒ¼ãƒˆæ™‚ã®åˆæœŸåŒ–
 *init
 
 
-/********************************************* ƒQ[ƒ€–{‘Ì ************************************************/
+/********************************************* ã‚²ãƒ¼ãƒ æœ¬ä½“ ************************************************/
 
-// ƒQ[ƒ€‰Šú‰»
+// ã‚²ãƒ¼ãƒ åˆæœŸåŒ–
 *gameinit
-    //íÔ”z—ñ‚Ì‰Šú‰»
+    //æˆ¦è»Šé…åˆ—ã®åˆæœŸåŒ–
     repeat PLAYER_COUNT + ENEMY_COUNT
         tank_used(cnt) = false
     loop
 
-    // ƒtƒB[ƒ‹ƒhî•ñ‚Ìƒ[ƒh
-    //TODO: ‚Æ‚è‚ ‚¦‚¸
+    // ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰æƒ…å ±ã®ãƒ­ãƒ¼ãƒ‰
+    //TODO: ã¨ã‚Šã‚ãˆãš
     celload "..\\resources\\image\\filelddata\\field0.png", MAPINFO_BUFFER
 
     field_width_max = getImageWidth(MAPINFO_BUFFER) * MAPCHIP_EDGE_POINT
@@ -512,11 +513,11 @@ right_trigger = false
             enemytank_id = ginfo_g
             castle_id = ginfo_b
             gsel MAPFIELD_BUFFER
-            // ƒ}ƒbƒvƒ`ƒbƒvî•ñ‚ğ‘‚«‚Ş
+            // ãƒãƒƒãƒ—ãƒãƒƒãƒ—æƒ…å ±ã‚’æ›¸ãè¾¼ã‚€
             mapchip_div_id(x, y) = chip_id
             pos x * MAPCHIP_EDGE_POINT, y * MAPCHIP_EDGE_POINT
             celput MAPCHIP_HANDLER, mapchip_div_id(x, y)
-            // “GíÔî•ñ‚Ì‚Æ‚«A‚»‚±‚É“GíÔ‚ğ”z’u
+            // æ•µæˆ¦è»Šæƒ…å ±ã®ã¨ãã€ãã“ã«æ•µæˆ¦è»Šã‚’é…ç½®
             if enemytank_id != 255 {
                 launch_side = 1
                 launch_tank_id = enemytank_id
@@ -524,7 +525,7 @@ right_trigger = false
                 enemy_launch_y = double(y * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2)
                 gosub *game_tank_launch
             }
-            // w’nî•ñ‚Ì‚Æ‚«A‚»‚±‚Éw’n‚ğ”z’u
+            // é™£åœ°æƒ…å ±ã®ã¨ãã€ãã“ã«é™£åœ°ã‚’é…ç½®
             if castle_id == 1 {
                 player_castle_x = double(x * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2)
                 player_castle_y = double(y * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2)
@@ -534,7 +535,7 @@ right_trigger = false
             }
         loop
     loop
-    // ƒvƒŒƒCƒ„[w’n‚ÌÀ•W‚Éƒ^[ƒQƒbƒg‚ğ“h‚è‘Ö‚¦‚é
+    // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼é™£åœ°ã®åº§æ¨™ã«ã‚¿ãƒ¼ã‚²ãƒƒãƒˆã‚’å¡—ã‚Šæ›¿ãˆã‚‹
     repeat ENEMY_COUNT, ENEMY_BASE_INDEX
         if tank_used(cnt) {
             tank_target_x(cnt) = player_castle_x
@@ -544,15 +545,15 @@ right_trigger = false
     gsel 0
     gosub *game_init_minimap
 
-    // ƒJƒƒ‰‚Ì‰Šú‰»
+    // ã‚«ãƒ¡ãƒ©ã®åˆæœŸåŒ–
     camera_x = player_castle_x
     camera_y = player_castle_y
     camera_expand = 1.0
 
-    // ƒ_ƒCƒAƒƒO“§‰ß—¦
+    // ãƒ€ã‚¤ã‚¢ãƒ­ã‚°é€éç‡
     dialog_alpha = 0
 
-    // ƒ‚[ƒhw’èq‚Ì‰Šú‰»
+    // ãƒ¢ãƒ¼ãƒ‰æŒ‡å®šå­ã®åˆæœŸåŒ–
     mode_focus_castle = false
     mode_focus_tank = false
     mode_dialog = false
@@ -560,73 +561,73 @@ right_trigger = false
     mode_command_ahead = false
     mode_command_formation = false
 
-    // ƒƒOŠÖ˜A•Ï”‚Ì‰Šú‰»
-    log_publish = false // ƒƒO‚ğo—Í‚·‚éÛ‚Étrue‚É‚·‚é
-    log_buffer = "" // ƒƒO“à—e
-    log_timer = 0 // ƒƒO‚ğo—Í‚·‚éƒ‹[ƒvŠÔ
+    // ãƒ­ã‚°é–¢é€£å¤‰æ•°ã®åˆæœŸåŒ–
+    log_publish = false // ãƒ­ã‚°ã‚’å‡ºåŠ›ã™ã‚‹éš›ã«trueã«ã™ã‚‹
+    log_buffer = "" // ãƒ­ã‚°å†…å®¹
+    log_timer = 0 // ãƒ­ã‚°ã‚’å‡ºåŠ›ã™ã‚‹ãƒ«ãƒ¼ãƒ—æ™‚é–“
 
-    // ”ÍˆÍ‘I‘ğ•Ï”‚Ì‰Šú‰»
+    // ç¯„å›²é¸æŠå¤‰æ•°ã®åˆæœŸåŒ–
     select_area_x1 = -1
     select_area_y1 = -1
     select_area_x2 = -1
     select_area_y2 = -1
 
-    // ƒQ[ƒ€ƒ‹[ƒvƒJƒEƒ“ƒ^[‚Ì‰Šú‰»
+    // ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼ã®åˆæœŸåŒ–
     counter = 0
 
-    // ’†‘à”Ô†‚Ì‰Šú‰»
+    // ä¸­éšŠç•ªå·ã®åˆæœŸåŒ–
     company_id = 0
 
-// ƒQ[ƒ€ƒ‹[ƒv
+// ã‚²ãƒ¼ãƒ ãƒ«ãƒ¼ãƒ—
 *gameloop
     redraw 0
 
-    // ‰½‚ç‚©‚Ìƒ‚[ƒh‚Å‚ ‚é‚©‚Ç‚¤‚©
+    // ä½•ã‚‰ã‹ã®ãƒ¢ãƒ¼ãƒ‰ã§ã‚ã‚‹ã‹ã©ã†ã‹
     not_some_mode = mode_focus_castle == false && mode_focus_tank == false && mode_map == false
 
-    // •`‰æ
+    // æç”»
     gosub *gamedraw
 
-    // XV
+    // æ›´æ–°
     gosub *gameupdate
 
     redraw 1
     await 16
 goto *gameloop
 
-// ƒQ[ƒ€‚Ì‰æ–Ê•`‰æ
+// ã‚²ãƒ¼ãƒ ã®ç”»é¢æç”»
 *gamedraw
-    // ”wŒi•`‰æ
+    // èƒŒæ™¯æç”»
     gmode 0
     pos 0, 0
     gzoom WINDOW_WIDTH, WINDOW_HEIGHT, MAPFIELD_BUFFER, (camera_x - double(WINDOW_WIDTH / 2) / camera_expand), (camera_y - double(WINDOW_HEIGHT / 2) / camera_expand), double(WINDOW_WIDTH) / camera_expand, double(WINDOW_HEIGHT) / camera_expand, 1
     gmode 2
 
-    // w’n•`‰æ
+    // é™£åœ°æç”»
     posRelative player_castle_x - getImageWidth(BASE_HANDLER) / 2, player_castle_y - getImageHeight(BASE_HANDLER) / 2
     celput BASE_HANDLER, 0, camera_expand, camera_expand
 
-    // “Gw•`‰æ
+    // æ•µé™£æç”»
     posRelative enemy_castle_x - getImageWidth(BASE_HANDLER) / 2, enemy_castle_y - getImageHeight(BASE_HANDLER) / 2
     celput BASE_HANDLER, 0, camera_expand, camera_expand
 
-    // ©w‘I‘ğƒ‚[ƒh‚Ì‚Æ‚«
+    // è‡ªé™£é¸æŠãƒ¢ãƒ¼ãƒ‰ã®ã¨ã
     if mode_focus_castle {
-        // ƒJ[ƒ\ƒ‹‚ğ©w‚É•`‰æ
+        // ã‚«ãƒ¼ã‚½ãƒ«ã‚’è‡ªé™£ã«æç”»
         posRelative player_castle_x, player_castle_y
         celput CURSOR_HANDLER, int(counter / 20) \ 2, 2.0 * camera_expand, 2.0 * camera_expand
-        // oŒ‚‰Â”\”ÍˆÍ‚ğ•`‰æ
+        // å‡ºæ’ƒå¯èƒ½ç¯„å›²ã‚’æç”»
         color 0, 255, 0
         circleRelative player_castle_x - 128, player_castle_y - 128, player_castle_x + 128, player_castle_y + 128
         posRelative player_castle_x, player_castle_y - 128
         px = ginfo_cx : py = ginfo_cy
-        font "‚l‚r ƒSƒVƒbƒN", 9
-        pos px - getMesWidth("oŒ‚‰Â”\”ÍˆÍ") / 2, py - getMesHeight("oŒ‚‰Â”\”ÍˆÍ")
+        font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", 9
+        pos px - getMesWidth("å‡ºæ’ƒå¯èƒ½ç¯„å›²") / 2, py - getMesHeight("å‡ºæ’ƒå¯èƒ½ç¯„å›²")
         objcolor 0, 0, 0
-        mes "oŒ‚‰Â”\”ÍˆÍ", mesopt_outline
+        mes "å‡ºæ’ƒå¯èƒ½ç¯„å›²", mesopt_outline
     }
 
-    // –Ú“I’n‚Ö‚Ìü‚ğ•`‰æ
+    // ç›®çš„åœ°ã¸ã®ç·šã‚’æç”»
     if mode_focus_tank {
         repeat listLen(selected_tank_index_list)
             if tank_target_selected(listGet(selected_tank_index_list, cnt)) {
@@ -636,17 +637,17 @@ goto *gameloop
         loop
     }
 
-    // íÔ•`‰æ
+    // æˆ¦è»Šæç”»
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) {
-            if cnt < PLAYER_COUNT || tank_found(cnt) { // ƒvƒŒƒCƒ„[íÔ‚Íí‚É•\¦A“GíÔ‚ÍŒ©‚Â‚©‚Á‚½‚à‚Ì‚¾‚¯•\¦
+            if cnt < PLAYER_COUNT || tank_found(cnt) { // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æˆ¦è»Šã¯å¸¸ã«è¡¨ç¤ºã€æ•µæˆ¦è»Šã¯è¦‹ã¤ã‹ã£ãŸã‚‚ã®ã ã‘è¡¨ç¤º
                 posRelative tank_x(cnt), tank_y(cnt)
                 celput tank_image_handler(cnt), 0, camera_expand, camera_expand, tank_angle(cnt)
             }
         }
     loop
 
-    // –C’e•`‰æ
+    // ç ²å¼¾æç”»
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_bullet_to(cnt) != -1 {
             angle = atan(tank_y(tank_bullet_to(cnt)) - tank_bullet_y(cnt), tank_x(tank_bullet_to(cnt)) - tank_bullet_x(cnt))
@@ -655,33 +656,33 @@ goto *gameloop
         }
     loop
 
-    // íÔ‘I‘ğƒ‚[ƒh‚Ì‚Æ‚«
+    // æˆ¦è»Šé¸æŠãƒ¢ãƒ¼ãƒ‰ã®ã¨ã
     if mode_focus_tank {
         repeat listLen(selected_tank_index_list)
             i = listGet(selected_tank_index_list, cnt)
-            // ƒJ[ƒ\ƒ‹‚ğ‘I‘ğ‚µ‚½íÔ‚É•`‰æ
+            // ã‚«ãƒ¼ã‚½ãƒ«ã‚’é¸æŠã—ãŸæˆ¦è»Šã«æç”»
             posRelative tank_x(i), tank_y(i)
             celput CURSOR_HANDLER, int(counter / 20) \ 2, 0.5 * camera_expand, 0.5 * camera_expand
-            // íÔ‚Ì–¼‘O‚ğ•`‰æ
+            // æˆ¦è»Šã®åå‰ã‚’æç”»
             objcolor 0, 0, 0
             color 255, 255, 255
             posRelative tank_x(i), tank_y(i) + double(tank_image_height(i) / 2)
             px = ginfo_cx : py = ginfo_cy
             pos px - double(getMesWidth(tankdata_name(tank_id(i))) / 2), py
             mes tankdata_name(tank_id(i)), mesopt_outline
-            // íÔ‚ÌHPƒo[‚ğ•\¦
+            // æˆ¦è»Šã®HPãƒãƒ¼ã‚’è¡¨ç¤º
             color 255, 0, 0
             boxfRelative tank_x(i) - 16.0, tank_y(i) - double(tank_image_height(i) / 2) - 6.0, tank_x(i) - 16.0 + 32.0 * (double(tank_hp(i)) / double(tankdata_hp(tank_id(i)))), tank_y(i) - double(tank_image_height(i) / 2)
-            // ƒŠƒ[ƒhƒo[‚ğ•`‰æ
+            // ãƒªãƒ­ãƒ¼ãƒ‰ãƒãƒ¼ã‚’æç”»
             color 255, 255, 0
             boxfRelative tank_x(i) - 16.0, tank_y(i) - double(tank_image_height(i) / 2) - 2.0, tank_x(i) - 16.0 + 32.0 * (1.0 - double(tank_reload_time(i)) / double(tankdata_reload_time(tank_id(i)))), tank_y(i) - double(tank_image_height(i) / 2)
-            // ‹”F”ÍˆÍ‚ğ•`‰æ
+            // è¦–èªç¯„å›²ã‚’æç”»
             color 0, 0, 255
             circleRelative tank_x(i) - tank_visible_range(i), tank_y(i) - tank_visible_range(i), tank_x(i) + tank_visible_range(i), tank_y(i) + tank_visible_range(i)
-            // Ë’ö”ÍˆÍ‚ğ•`‰æ
+            // å°„ç¨‹ç¯„å›²ã‚’æç”»
             color 255, 0, 0
             circleRelative tank_x(i) - tank_range(i), tank_y(i) - tank_range(i), tank_x(i) + tank_range(i), tank_y(i) + tank_range(i)
-            // ‘à’·Ô‚Ìã‚Éƒtƒ‰ƒbƒO‚ğ•`‰æ
+            // éšŠé•·è»Šã®ä¸Šã«ãƒ•ãƒ©ãƒƒã‚°ã‚’æç”»
             if tank_company(i) != -1 && tank_company_leader(i) == i {
                 posRelative tank_x(i), tank_y(i) - (double(tank_image_height(i)) * camera_expand) / 2.0
                 pos ginfo_cx - 8, ginfo_cy - 16
@@ -690,7 +691,7 @@ goto *gameloop
         loop
     }
 
-    // íÔ‚ªƒ_ƒ[ƒW‚ğó‚¯‚½‚Æ‚«A‚»‚Ìƒ_ƒ[ƒW—Ê‚ğ•`‰æ
+    // æˆ¦è»ŠãŒãƒ€ãƒ¡ãƒ¼ã‚¸ã‚’å—ã‘ãŸã¨ãã€ãã®ãƒ€ãƒ¡ãƒ¼ã‚¸é‡ã‚’æç”»
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_damaged_display_time(cnt) > 0 {
             objcolor 0, 0, 0
@@ -710,7 +711,7 @@ goto *gameloop
         }
     loop
 
-    // ‘I‘ğ”ÍˆÍ•`‰æ
+    // é¸æŠç¯„å›²æç”»
     getkey a, 1: if a && not_some_mode {
         color 100, 100, 255
         gmode 3, , , 128
@@ -718,7 +719,7 @@ goto *gameloop
         gmode 2
     }
 
-    // ƒƒO•`‰æ
+    // ãƒ­ã‚°æç”»
     if log_timer > 0 {
         pos -100, -100
         mesExpand log_buffer, 255, 255, 255, 15, 1, log_size, log_width, log_height
@@ -734,13 +735,13 @@ goto *gameloop
         log_publish = false
     }
 
-    // ƒ}ƒbƒvƒ{ƒ^ƒ“‚ğ•`‰æ
+    // ãƒãƒƒãƒ—ãƒœã‚¿ãƒ³ã‚’æç”»
     if not_some_mode {
         pos 3, 3
         celput MAPBUTTON_HANDLER
     }
 
-    // ƒ}ƒbƒvƒ‚[ƒh‚Ì‚Æ‚«ƒ}ƒbƒv•`‰æ
+    // ãƒãƒƒãƒ—ãƒ¢ãƒ¼ãƒ‰ã®ã¨ããƒãƒƒãƒ—æç”»
     if mode_map {
         select_area_x1 = -1
         select_area_y1 = -1
@@ -748,7 +749,7 @@ goto *gameloop
         boxfr minimap_base_x + camera_x / double(MAPCHIP_EDGE_POINT) - double(WINDOW_WIDTH) / (32.0 * camera_expand), minimap_base_y + camera_y / double(MAPCHIP_EDGE_POINT) - double(WINDOW_HEIGHT) / (32.0 * camera_expand), minimap_base_x + camera_x / double(MAPCHIP_EDGE_POINT) + double(WINDOW_WIDTH) / (32.0 * camera_expand), minimap_base_y + camera_y / double(MAPCHIP_EDGE_POINT) + double(WINDOW_HEIGHT) / (32.0 * camera_expand)
     }
 
-    // ƒ_ƒCƒAƒƒO•`‰æ
+    // ãƒ€ã‚¤ã‚¢ãƒ­ã‚°æç”»
     gsel DIALOG_HANDLER
     color 0, 0, 0
     boxf
@@ -758,30 +759,30 @@ goto *gameloop
     gcopy DIALOG_HANDLER, 0, 0, DIALOG_SIZE_WIDTH, DIALOG_SIZE_HEIGHT
     gmode 2
 
-    // ƒ_ƒCƒAƒƒO“§‰ß—¦
+    // ãƒ€ã‚¤ã‚¢ãƒ­ã‚°é€éç‡
     if mode_dialog {
         intCloserTo dialog_alpha, 255, 20
     } else {
         intCloserTo dialog_alpha, 0, 20
     }
 
-    // oŒ‚íÔ‘I‘ğƒ‚[ƒh‚Ì‚Æ‚«A©wƒ_ƒCƒAƒƒO‚ğ•`‰æ
+    // å‡ºæ’ƒæˆ¦è»Šé¸æŠãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€è‡ªé™£ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’æç”»
     if mode_focus_castle {
-        // ”wŒi•`‰æ
+        // èƒŒæ™¯æç”»
         color 0, 0, 0
         boxf 0, WINDOW_HEIGHT - 100, WINDOW_WIDTH, WINDOW_HEIGHT
-        // ƒƒbƒZ[ƒW•`‰æ
+        // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸æç”»
         pos 5, WINDOW_HEIGHT - 100 + 5
         color 255, 255, 255
-        font "‚l‚r ƒSƒVƒbƒN", 9
-        mes "ƒvƒŒƒCƒ„[‹’“_"
-        // ƒoƒcƒ{ƒ^ƒ“•`‰æ
+        font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", 9
+        mes "ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼æ‹ ç‚¹"
+        // ãƒãƒ„ãƒœã‚¿ãƒ³æç”»
         color 150, 150, 150
         boxf WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
         color 0, 0, 0
         line WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
         line WINDOW_WIDTH - 10, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 70
-        // íÔƒ{ƒ^ƒ“•`‰æ
+        // æˆ¦è»Šãƒœã‚¿ãƒ³æç”»
         repeat 5
             pos 74 * cnt + 10, WINDOW_HEIGHT - 82
             celput TANK_BADGE_HANDLER, 0
@@ -791,43 +792,43 @@ goto *gameloop
         loop
     }
 
-    // íÔƒtƒH[ƒJƒXƒ‚[ƒh‚Ì‚Æ‚«AíÔ–½—ßƒ_ƒCƒAƒƒO‚ğ•`‰æ
+    // æˆ¦è»Šãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€æˆ¦è»Šå‘½ä»¤ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’æç”»
     if mode_focus_tank {
-        // ”wŒi•`‰æ
+        // èƒŒæ™¯æç”»
         color 0, 0, 0
         boxf 0, WINDOW_HEIGHT - 100, WINDOW_WIDTH, WINDOW_HEIGHT
-        // ƒƒbƒZ[ƒW•`‰æ
+        // ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸æç”»
         pos 5, WINDOW_HEIGHT - 100 + 5
         color 255, 255, 255
-        font "‚l‚r ƒSƒVƒbƒN", 9
-        mes "ƒRƒ}ƒ“ƒh"
-        // ƒoƒcƒ{ƒ^ƒ“•`‰æ
+        font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", 9
+        mes "ã‚³ãƒãƒ³ãƒ‰"
+        // ãƒãƒ„ãƒœã‚¿ãƒ³æç”»
         color 150, 150, 150
         boxf WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
         color 0, 0, 0
         line WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70
         line WINDOW_WIDTH - 10, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 70
-        // íÔƒ{ƒ^ƒ“•`‰æ
+        // æˆ¦è»Šãƒœã‚¿ãƒ³æç”»
         repeat 5
             pos 74 * cnt + 10, WINDOW_HEIGHT - 82
             celput COMMAND_BADGE_HANDLER, cnt
         loop
     }
 
-    // –Ú“I’n‘I‘ğƒRƒ}ƒ“ƒhƒ‚[ƒh‚Ì‚Æ‚«Aƒ}ƒbƒv‚ğ•`‰æ
+    // ç›®çš„åœ°é¸æŠã‚³ãƒãƒ³ãƒ‰ãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€ãƒãƒƒãƒ—ã‚’æç”»
     if mode_command_ahead {
         gosub *game_draw_minimap
     }
 
-    // wŒ`‘I‘ğƒ‚[ƒh‚Ì‚Æ‚«AƒtƒH[ƒ[ƒVƒ‡ƒ“‘I‘ğƒ_ƒCƒAƒƒO‚ğ•`‰æ
+    // é™£å½¢é¸æŠãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€ãƒ•ã‚©ãƒ¼ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é¸æŠãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’æç”»
     if mode_command_formation {
         color 0, 0, 0
         boxf WINDOW_WIDTH / 2 - 306 / 2, WINDOW_HEIGHT / 2 - 104 / 2, WINDOW_WIDTH / 2 + 306 / 2, WINDOW_HEIGHT / 2 + 104 / 2
-        font "‚l‚r ƒSƒVƒbƒN", 15
+        font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", 15
         pos WINDOW_WIDTH / 2 - 306 / 2 + 5, WINDOW_HEIGHT / 2 - 104 / 2 + 5
         color 255, 255, 255
-        mes "ƒtƒH[ƒ[ƒVƒ‡ƒ“‘I‘ğ"
-        font "‚l‚r ƒSƒVƒbƒN", 9
+        mes "ãƒ•ã‚©ãƒ¼ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é¸æŠ"
+        font "ï¼­ï¼³ ã‚´ã‚·ãƒƒã‚¯", 9
         repeat 4
             pos WINDOW_WIDTH / 2 - 306 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30
             celput FORMATIONBUTTON_HANDLER, cnt
@@ -835,28 +836,28 @@ goto *gameloop
     }
 return
 
-// ƒQ[ƒ€‚ÌXV
+// ã‚²ãƒ¼ãƒ ã®æ›´æ–°
 *gameupdate
-    // ƒtƒH[ƒJƒXƒ‚[ƒh‚Å‚È‚¢‚Æ‚«ƒ}ƒEƒX‘€ì
+    // ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãƒ¢ãƒ¼ãƒ‰ã§ãªã„ã¨ããƒã‚¦ã‚¹æ“ä½œ
     if not_some_mode {
-        // ƒJƒƒ‰‘€ì(ƒL[ƒ{[ƒh)
+        // ã‚«ãƒ¡ãƒ©æ“ä½œ(ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰)
         getkey a, 37: if a: camera_x -= 10.0
         getkey a, 38: if a: camera_y -= 10.0
         getkey a, 39: if a: camera_x += 10.0
         getkey a, 40: if a: camera_y += 10.0
 
-        // ƒJƒƒ‰‘€ì(ƒ}ƒEƒX)
+        // ã‚«ãƒ¡ãƒ©æ“ä½œ(ãƒã‚¦ã‚¹)
         getkey a, 2: if a{
             camera_x -= int(double(mousex - before_mx) * (1.0 / camera_expand))
             camera_y -= int(double(mousey - before_my) * (1.0 / camera_expand))
         }
 
-        // ”ÍˆÍw’è
+        // ç¯„å›²æŒ‡å®š
         getkey a, 1: if a {
             select_area_x2 = getMousePosX()
             select_area_y2 = getMousePosY()
         } else {
-            // ƒtƒB[ƒ‹ƒh‚É‚ ‚éíÔ‚ğ‘I‘ğ
+            // ãƒ•ã‚£ãƒ¼ãƒ«ãƒ‰ã«ã‚ã‚‹æˆ¦è»Šã‚’é¸æŠ
             if select_area_x1 != -1 && select_area_y1 != -1 && select_area_x2 != -1 && select_area_y2 != -1 {
                 gosub *game_area_select_player_tank
                 if listLen(selected_tank_index_list) != 0 {
@@ -872,15 +873,15 @@ return
     before_mx = mousex
     before_my = mousey
 
-    // ©wƒtƒH[ƒJƒXƒ‚[ƒh‚Ì‚Æ‚«•¨‘Ì‚ÉƒJƒƒ‰‚ğ‹ß‚Ã‚¯‚é
+    // è‡ªé™£ãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãƒ¢ãƒ¼ãƒ‰ã®ã¨ãç‰©ä½“ã«ã‚«ãƒ¡ãƒ©ã‚’è¿‘ã¥ã‘ã‚‹
     if mode_focus_castle {
         closerSpeedy camera_x, player_castle_x, 0.1
         closerSpeedy camera_y, player_castle_y, 0.1
     }
 
-    // íÔƒtƒH[ƒJƒXƒ‚[ƒh‚Ì‚Æ‚«•¨‘Ì‚ÉƒJƒƒ‰‚ğ‹ß‚Ã‚¯‚é
+    // æˆ¦è»Šãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãƒ¢ãƒ¼ãƒ‰ã®ã¨ãç‰©ä½“ã«ã‚«ãƒ¡ãƒ©ã‚’è¿‘ã¥ã‘ã‚‹
     if mode_focus_tank {
-        // ‘I‘ğ‚³‚ê‚½íÔ‚ÌdS‚ğ‹‚ß‚é
+        // é¸æŠã•ã‚ŒãŸæˆ¦è»Šã®é‡å¿ƒã‚’æ±‚ã‚ã‚‹
         selected_tank_gx = 0.0
         selected_tank_gy = 0.0
         repeat listLen(selected_tank_index_list)
@@ -893,14 +894,14 @@ return
         closerSpeedy camera_y, selected_tank_gy, 0.1
     }
 
-    // ƒ}ƒEƒXƒzƒC[ƒ‹‚É‚æ‚éŠg‘åk¬
+    // ãƒã‚¦ã‚¹ãƒ›ã‚¤ãƒ¼ãƒ«ã«ã‚ˆã‚‹æ‹¡å¤§ç¸®å°
     diff = double(mousew - before_mw) * 0.001
     camera_expand += diff
     if camera_expand > 2.0: camera_expand = 2.0
     if camera_expand < 0.2: camera_expand = 0.2
     before_mw = mousew
 
-    // ƒ}ƒbƒvƒ‚[ƒh‚Ì‚Æ‚«Aƒ}ƒEƒX‚Ì‹“_ˆÚ“®
+    // ãƒãƒƒãƒ—ãƒ¢ãƒ¼ãƒ‰ã®ã¨ãã€ãƒã‚¦ã‚¹ã®è¦–ç‚¹ç§»å‹•
     if mode_map {
         getkey a, 1: if a && inRect(mousex, mousey, minimap_base_x, minimap_base_y, minimap_base_x + field_width_max / double(MAPCHIP_EDGE_POINT), minimap_base_y + field_height_max / double(MAPCHIP_EDGE_POINT)) {
             closerSpeedy camera_x, double((mousex - minimap_base_x) * MAPCHIP_EDGE_POINT) - double(MAPCHIP_EDGE_POINT) / 2.0, 0.2
@@ -908,7 +909,7 @@ return
         }
     }
 
-    // ƒJƒƒ‰‚Ì”ÍˆÍŠO—}§
+    // ã‚«ãƒ¡ãƒ©ã®ç¯„å›²å¤–æŠ‘åˆ¶
     if camera_x - double(WINDOW_WIDTH / 2) / camera_expand < 0 {
         camera_x = double(WINDOW_WIDTH / 2) / camera_expand
     } else: if camera_x + double(WINDOW_WIDTH / 2) / camera_expand > field_width_max {
@@ -920,7 +921,7 @@ return
         camera_y = field_height_max - double(WINDOW_HEIGHT / 2) / camera_expand
     }
 
-    // ‰æ–Ê‚ªƒNƒŠƒbƒN‚³‚ê‚½‚Æ‚«
+    // ç”»é¢ãŒã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸã¨ã
     if mouseLeftClicked() {
         gosub *game_mouseleftclicked
     }
@@ -928,24 +929,24 @@ return
         gosub *game_mouserightclicked
     }
 
-    // íÔ‚Ì“®‚«
+    // æˆ¦è»Šã®å‹•ã
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) && tank_stop(cnt) == false && tank_aiming(cnt) == false {
-            if tank_target_selected(cnt) && tank_company(cnt) == -1 { // ’†‘à‚É‘®‚µ‚Ä‚¢‚È‚¢‚Æ‚«
+            if tank_target_selected(cnt) && tank_company(cnt) == -1 { // ä¸­éšŠã«å±ã—ã¦ã„ãªã„ã¨ã
                 tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
                 tank_xv = cos(tank_angle(cnt)) * tank_speed(cnt)
                 tank_yv = sin(tank_angle(cnt)) * tank_speed(cnt)
-            } else: if tank_company(cnt) != -1 { // ’†‘à‚É‘®‚µ‚Ä‚¢‚é‚Æ‚«
-                if tank_company_leader(cnt) = cnt { // ‘à’·‚Ì‚Æ‚«
+            } else: if tank_company(cnt) != -1 { // ä¸­éšŠã«å±ã—ã¦ã„ã‚‹ã¨ã
+                if tank_company_leader(cnt) = cnt { // éšŠé•·ã®ã¨ã
                     tank_angle(cnt) = atan(tank_target_y(cnt) - tank_y(cnt), tank_target_x(cnt) - tank_x(cnt))
                     tank_xv = cos(tank_angle(cnt)) * tank_company_speed(cnt)
                     tank_yv = sin(tank_angle(cnt)) * tank_company_speed(cnt)
-                } else { // ‘à’·‚Å‚È‚¢‚Æ‚«
+                } else { // éšŠé•·ã§ãªã„ã¨ã
                     companyFormationPosition target_x, target_y, cnt, 64
-                    if tank_stop(tank_company_leader(cnt)) || tank_target_selected(tank_company_leader(cnt)) == false || tank_aiming(tank_company_leader(cnt)) { // ‘à’·‚ª“®‚¢‚Ä‚¢‚È‚¢‚Æ‚«
+                    if tank_stop(tank_company_leader(cnt)) || tank_target_selected(tank_company_leader(cnt)) == false || tank_aiming(tank_company_leader(cnt)) { // éšŠé•·ãŒå‹•ã„ã¦ã„ãªã„ã¨ã
                         tank_target_x(cnt) = target_x
                         tank_target_y(cnt) = target_y
-                    } else { // ‘à’·‚ª“®‚¢‚Ä‚¢‚é‚Æ‚«
+                    } else { // éšŠé•·ãŒå‹•ã„ã¦ã„ã‚‹ã¨ã
                         tank_target_x(cnt) = target_x + (cos(tank_angle(tank_company_leader(cnt))) * tank_company_speed(tank_company_leader(cnt))) * (distance(tank_x(cnt), tank_y(cnt), target_x, target_y) / tank_speed(cnt))
                         tank_target_y(cnt) = target_y + (sin(tank_angle(tank_company_leader(cnt))) * tank_company_speed(tank_company_leader(cnt))) * (distance(tank_x(cnt), tank_y(cnt), target_x, target_y) / tank_speed(cnt))
                     }
@@ -967,7 +968,7 @@ return
                 tank_stop(cnt) = true
                 tank_target_selected(cnt) = false
                 if cnt < PLAYER_COUNT {
-                    log_buffer = "íÔ‚ª–Ú“I’n‚É“’…‚µ‚Ü‚µ‚½"
+                    log_buffer = "æˆ¦è»ŠãŒç›®çš„åœ°ã«åˆ°ç€ã—ã¾ã—ãŸ"
                     log_publish = true
                 }
             }
@@ -978,7 +979,7 @@ return
         }
     loop
 
-    // ‘o•û“GíÔ‚ğ”­Œ©‚·‚é
+    // åŒæ–¹æ•µæˆ¦è»Šã‚’ç™ºè¦‹ã™ã‚‹
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) {
             if cnt < PLAYER_COUNT {
@@ -992,7 +993,7 @@ return
             repeat repeat_counter, repeat_base
                 if tank_used(cnt) && distance(tank_x(cnt), tank_y(cnt), tank_x(from_cnt), tank_y(tank_cnt)) < tank_visible_range(from_cnt) {
                     if from_cnt < PLAYER_COUNT && tank_found(cnt) == false {
-                        log_buffer = "“GíÔ‚ğ”­Œ©‚µ‚Ü‚µ‚½"
+                        log_buffer = "æ•µæˆ¦è»Šã‚’ç™ºè¦‹ã—ã¾ã—ãŸ"
                         log_publish = true
                     }
                     tank_found(cnt) = true
@@ -1002,7 +1003,7 @@ return
         }
     loop
 
-    // ”­Œ©‚©‚ç10•bŒo‚Á‚½‚çŒ©¸‚¤
+    // ç™ºè¦‹ã‹ã‚‰10ç§’çµŒã£ãŸã‚‰è¦‹å¤±ã†
     repeat ENEMY_COUNT, ENEMY_BASE_INDEX
         if tank_used(cnt) && tank_found(cnt) {
             tank_found_timer(cnt)--
@@ -1012,7 +1013,7 @@ return
         }
     loop
 
-    // –C’e‚ÌˆÊ’u‚ÌXV
+    // ç ²å¼¾ã®ä½ç½®ã®æ›´æ–°
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_bullet_to(cnt) != -1 {
             angle = atan(tank_y(tank_bullet_to(cnt)) - tank_bullet_y(cnt), tank_x(tank_bullet_to(cnt)) - tank_bullet_x(cnt))
@@ -1028,7 +1029,7 @@ return
         }
     loop
 
-    // ’†‘à‚É‘®‚µ‚Ä‚¨‚èA‘à’·‚ª©g‚Ì’†‘à‚É‘®‚µ‚Ä‚¢‚È‚¢‚Æ‚«A©•ª‚ğ’†‘à‚©‚çŠO‚·
+    // ä¸­éšŠã«å±ã—ã¦ãŠã‚Šã€éšŠé•·ãŒè‡ªèº«ã®ä¸­éšŠã«å±ã—ã¦ã„ãªã„ã¨ãã€è‡ªåˆ†ã‚’ä¸­éšŠã‹ã‚‰å¤–ã™
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_company(cnt) != -1 {
            if tank_company(tank_company_leader(cnt)) != tank_company(cnt) {
@@ -1037,7 +1038,7 @@ return
         }
     loop
 
-    // íÔ‚Ì€–SŠm”F
+    // æˆ¦è»Šã®æ­»äº¡ç¢ºèª
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) && tank_hp(cnt) <= 0 {
             tank_used(cnt) = false
@@ -1045,85 +1046,85 @@ return
         }
     loop
 
-    // ‘I‘ğ’†íÔ‚ª‘S‚Ä€–S‚µ‚½ê‡ƒtƒH[ƒJƒXƒ‚[ƒh‚ğ‰ğœ
+    // é¸æŠä¸­æˆ¦è»ŠãŒå…¨ã¦æ­»äº¡ã—ãŸå ´åˆãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãƒ¢ãƒ¼ãƒ‰ã‚’è§£é™¤
     if listLen(selected_tank_index_list) == 0 {
         mode_focus_tank = false
     }
 
-    // –C’e‘•“U
+    // ç ²å¼¾è£…å¡«
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) && tank_reload_time(cnt) > 0 {
             tank_reload_time(cnt)--
         }
     loop
 
-    // ©“®UŒ‚
+    // è‡ªå‹•æ”»æ’ƒ
     gosub *game_tankattack
 
-    // ƒƒCƒ“ƒ‹[ƒvƒJƒEƒ“ƒ^[
+    // ãƒ¡ã‚¤ãƒ³ãƒ«ãƒ¼ãƒ—ã‚«ã‚¦ãƒ³ã‚¿ãƒ¼
     counter++
 return
 
-// ƒQ[ƒ€’†‚Éƒ}ƒEƒX¶ƒ{ƒ^ƒ“‚ªƒNƒŠƒbƒN‚³‚ê‚½‚Æ‚«‚ÌƒTƒuƒ‹[ƒ`ƒ“
+// ã‚²ãƒ¼ãƒ ä¸­ã«ãƒã‚¦ã‚¹å·¦ãƒœã‚¿ãƒ³ãŒã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸã¨ãã®ã‚µãƒ–ãƒ«ãƒ¼ãƒãƒ³
 *game_mouseleftclicked
     mx = getMousePosX()
     my = getMousePosY()
 
-    // ‰½‚©‚Ìƒ‚[ƒh‚É‚·‚é
+    // ä½•ã‹ã®ãƒ¢ãƒ¼ãƒ‰ã«ã™ã‚‹
     if not_some_mode {
-        // ©w‘I‘ğƒ‚[ƒh
-        if inRect(mx, my, player_castle_x - 64, player_castle_y - 64, player_castle_x + 64, player_castle_y + 64) && mode_focus_castle == false && mode_focus_tank == false{ // ©w‚ğƒNƒŠƒbƒN‚µ‚½‚Æ‚«
+        // è‡ªé™£é¸æŠãƒ¢ãƒ¼ãƒ‰
+        if inRect(mx, my, player_castle_x - 64, player_castle_y - 64, player_castle_x + 64, player_castle_y + 64) && mode_focus_castle == false && mode_focus_tank == false{ // è‡ªé™£ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ãŸã¨ã
             mode_focus_castle = true
             return
         }
-        // ƒ}ƒbƒvƒ‚[ƒh
-        if inRect(mousex, mousey, 3, 3, 3 + getImageWidth(MAPBUTTON_HANDLER), 3 + getImageHeight(MAPBUTTON_HANDLER)) { // ¶ã‚Ìƒ{ƒ^ƒ“‚ğƒNƒŠƒbƒN‚µ‚½‚Æ‚«
+        // ãƒãƒƒãƒ—ãƒ¢ãƒ¼ãƒ‰
+        if inRect(mousex, mousey, 3, 3, 3 + getImageWidth(MAPBUTTON_HANDLER), 3 + getImageHeight(MAPBUTTON_HANDLER)) { // å·¦ä¸Šã®ãƒœã‚¿ãƒ³ã‚’ã‚¯ãƒªãƒƒã‚¯ã—ãŸã¨ã
             mode_map = true
             return
         }
     }
 
-    // ©wƒ_ƒCƒAƒƒO‚Å‚Ìƒ}ƒEƒX‚Ì“®ì
+    // è‡ªé™£ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã§ã®ãƒã‚¦ã‚¹ã®å‹•ä½œ
     if mode_focus_castle {
-        if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //ƒoƒcƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Æ‚«
+        if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //ãƒãƒ„ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã¨ã
             mode_focus_castle = false
             return
         }
         repeat 5
             if inRect(mousex, mousey, 74 * cnt + 10, WINDOW_HEIGHT - 82, 74 * cnt + 10 + 64, WINDOW_HEIGHT - 82 + 64) {
-                launch_side = 0 // ƒvƒŒƒCƒ„[
-                launch_tank_id = cnt // íÔ‚Ìí—ŞID
+                launch_side = 0 // ãƒ—ãƒ¬ã‚¤ãƒ¤ãƒ¼
+                launch_tank_id = cnt // æˆ¦è»Šã®ç¨®é¡ID
                 gosub *game_tank_launch
             }
         loop
         return
     }
 
-    // íÔƒtƒH[ƒJƒXƒ‚[ƒh‚Å‚Ìƒ}ƒEƒX‚Ì“®ì
+    // æˆ¦è»Šãƒ•ã‚©ãƒ¼ã‚«ã‚¹ãƒ¢ãƒ¼ãƒ‰ã§ã®ãƒã‚¦ã‚¹ã®å‹•ä½œ
     if mode_focus_tank && mode_command_ahead == false{
-        if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //ƒoƒcƒ{ƒ^ƒ“‚ª‰Ÿ‚³‚ê‚½‚Æ‚«
+        if inRect(mousex, mousey, WINDOW_WIDTH - 30, WINDOW_HEIGHT - 90, WINDOW_WIDTH - 10, WINDOW_HEIGHT - 70) { //ãƒãƒ„ãƒœã‚¿ãƒ³ãŒæŠ¼ã•ã‚ŒãŸã¨ã
             mode_focus_tank = false
             return
         }
         repeat 5
             if inRect(mousex, mousey, 74 * cnt + 10, WINDOW_HEIGHT - 82, 74 * cnt + 10 + 64, WINDOW_HEIGHT - 82 + 64) {
                 switch cnt
-                    case 0: // –Ú“I’n‘I‘ğ
+                    case 0: // ç›®çš„åœ°é¸æŠ
                         mode_command_ahead = true
                         swbreak
-                    case 1: // “®‚­
+                    case 1: // å‹•ã
                         repeat listLen(selected_tank_index_list)
                             if tank_target_selected(listGet(selected_tank_index_list, cnt)) {
                                 tank_stop(listGet(selected_tank_index_list, cnt)) = false
                             }
                         loop
                         swbreak
-                    case 2: // ’â‚Ü‚é
+                    case 2: // åœã¾ã‚‹
                         repeat listLen(selected_tank_index_list)
                             tank_stop(listGet(selected_tank_index_list, cnt)) = true
                         loop
                         swbreak
-                    case 4: // wŒ`‘I‘ğ
+                    case 4: // é™£å½¢é¸æŠ
                         mode_command_formation = true
                         swbreak
                 swend
@@ -1131,21 +1132,21 @@ return
         loop
     }
 
-    // –Ú“I’n‘I‘ğ
+    // ç›®çš„åœ°é¸æŠ
     if mode_command_ahead {
         if inRect(mousex, mousey, minimap_base_x, minimap_base_y, minimap_base_x + field_width_max / double(MAPCHIP_EDGE_POINT), minimap_base_y + field_height_max / double(MAPCHIP_EDGE_POINT)) {
             repeat listLen(selected_tank_index_list)
-                // ‘I‘ğ’†‚ÌíÔ‚ª’†‘à‚É‘®‚µ‚Ä‚¨‚èA‚©‚Â‘I‘ğ‚³‚ê‚½íÔ‚Ì’†‚É‚»‚Ì‘à’·‚ª‚¢‚È‚¢‚Æ‚«AíÔ‚ğ’†‘à‚©‚çŠO‚·
+                // é¸æŠä¸­ã®æˆ¦è»ŠãŒä¸­éšŠã«å±ã—ã¦ãŠã‚Šã€ã‹ã¤é¸æŠã•ã‚ŒãŸæˆ¦è»Šã®ä¸­ã«ãã®éšŠé•·ãŒã„ãªã„ã¨ãã€æˆ¦è»Šã‚’ä¸­éšŠã‹ã‚‰å¤–ã™
                 if tank_company(listGet(selected_tank_index_list, cnt)) != -1 && listContains(selected_tank_index_list, tank_company_leader(listGet(selected_tank_index_list, cnt))) == false {
                     tank_company(listGet(selected_tank_index_list, cnt)) = -1
                 }
             loop
-            // ‘I‘ğ‚³‚ê‚½íÔ‚ÌdS‚ğ‹‚ß‚é
+            // é¸æŠã•ã‚ŒãŸæˆ¦è»Šã®é‡å¿ƒã‚’æ±‚ã‚ã‚‹
             selected_tank_gx = 0.0
             selected_tank_gy = 0.0
             c = 0
             repeat listLen(selected_tank_index_list)
-                if tank_company(listGet(selected_tank_index_list, cnt)) == -1 { // ’†‘à‚É‘®‚µ‚Ä‚¢‚È‚¢‚Æ‚«
+                if tank_company(listGet(selected_tank_index_list, cnt)) == -1 { // ä¸­éšŠã«å±ã—ã¦ã„ãªã„ã¨ã
                     selected_tank_gx += tank_x(listGet(selected_tank_index_list, cnt))
                     selected_tank_gy += tank_y(listGet(selected_tank_index_list, cnt))
                     c++
@@ -1156,13 +1157,13 @@ return
                 selected_tank_gy /= double(c)
             }
             repeat listLen(selected_tank_index_list)
-                if tank_company(listGet(selected_tank_index_list, cnt)) == -1 { // ’†‘à‚É‘®‚µ‚Ä‚¢‚È‚¢‚Æ‚«
+                if tank_company(listGet(selected_tank_index_list, cnt)) == -1 { // ä¸­éšŠã«å±ã—ã¦ã„ãªã„ã¨ã
                     tank_target_x(listGet(selected_tank_index_list, cnt)) = double(mousex * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_x * MAPCHIP_EDGE_POINT) + (tank_x(listGet(selected_tank_index_list, cnt)) - selected_tank_gx)
                     tank_target_y(listGet(selected_tank_index_list, cnt)) = double(mousey * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_y * MAPCHIP_EDGE_POINT) + (tank_y(listGet(selected_tank_index_list, cnt)) - selected_tank_gy)
-                } else: if tank_company_leader(listGet(selected_tank_index_list, cnt)) == listGet(selected_tank_index_list, cnt) { // ‘à’·‚Ì‚Æ‚«
+                } else: if tank_company_leader(listGet(selected_tank_index_list, cnt)) == listGet(selected_tank_index_list, cnt) { // éšŠé•·ã®ã¨ã
                     tank_target_x(listGet(selected_tank_index_list, cnt)) = double(mousex * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_x * MAPCHIP_EDGE_POINT)
                     tank_target_y(listGet(selected_tank_index_list, cnt)) = double(mousey * MAPCHIP_EDGE_POINT - MAPCHIP_EDGE_POINT / 2 - minimap_base_y * MAPCHIP_EDGE_POINT)
-                } else { // ‘à’·‚Å‚È‚¢‚Æ‚«
+                } else { // éšŠé•·ã§ãªã„ã¨ã
                     companyFormationPosition tank_target_x(listGet(selected_tank_index_list, cnt)), tank_target_y(listGet(selected_tank_index_list, cnt)), cnt, 64
                 }
                 tank_stop(listGet(selected_tank_index_list, cnt)) = false
@@ -1171,7 +1172,7 @@ return
         }
     }
 
-    // ƒtƒH[ƒ[ƒVƒ‡ƒ“‘I‘ğ
+    // ãƒ•ã‚©ãƒ¼ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é¸æŠ
     if mode_command_formation {
         repeat 4
             if inRect(mousex, mousey, WINDOW_WIDTH / 2 - 306 / 2 + (74 * cnt) + 10, WINDOW_HEIGHT / 2 - 104 / 2 + 30, WINDOW_WIDTH / 2 - 306 / 2 + (74 * cnt) + 10 + 64, WINDOW_HEIGHT / 2 - 104 / 2 + 30 + 64) {
@@ -1182,12 +1183,12 @@ return
         loop
     }
 
-    // ‘I‘ğ”ÍˆÍw’è‚ÌÅ‰’n“_‚Ìİ’è
+    // é¸æŠç¯„å›²æŒ‡å®šã®æœ€åˆåœ°ç‚¹ã®è¨­å®š
     select_area_x1 = mx
     select_area_y1 = my
 return
 
-// ƒQ[ƒ€’†‚Éƒ}ƒEƒX‰Eƒ{ƒ^ƒ“‚ªƒNƒŠƒbƒN‚³‚ê‚½‚Æ‚«‚ÌƒTƒuƒ‹[ƒ`ƒ“
+// ã‚²ãƒ¼ãƒ ä¸­ã«ãƒã‚¦ã‚¹å³ãƒœã‚¿ãƒ³ãŒã‚¯ãƒªãƒƒã‚¯ã•ã‚ŒãŸã¨ãã®ã‚µãƒ–ãƒ«ãƒ¼ãƒãƒ³
 *game_mouserightclicked
     mx = getMousePosX()
     my = getMousePosY()
@@ -1219,7 +1220,7 @@ return
     }
 return
 
-// íÔ‚ğƒ}ƒbƒv‚ÉoŒ»‚³‚¹‚éˆ—
+// æˆ¦è»Šã‚’ãƒãƒƒãƒ—ã«å‡ºç¾ã•ã›ã‚‹å‡¦ç†
 *game_tank_launch
     if launch_side == 0 {
         repeat_counter = PLAYER_COUNT
@@ -1242,7 +1243,7 @@ return
                 tank_stop(cnt) = false
                 tank_x(cnt) = enemy_launch_x
                 tank_y(cnt) = enemy_launch_y
-                //TODO: ‚Æ‚è‚ ‚¦‚¸
+                //TODO: ã¨ã‚Šã‚ãˆãš
                 tank_target_selected(cnt) = true
                 tank_target_x(cnt) = player_castle_x
                 tank_target_y(cnt) = player_castle_y
@@ -1259,7 +1260,7 @@ return
     loop
 return
 
-// oŒ»‚·‚éíÔ‚ÌêŠ‚ğŒˆ‚ß‚é
+// å‡ºç¾ã™ã‚‹æˆ¦è»Šã®å ´æ‰€ã‚’æ±ºã‚ã‚‹
 *game_playertank_launch_placement
     tank_x(launch_id) = player_castle_x
     tank_y(launch_id) = player_castle_y - 128
@@ -1271,7 +1272,7 @@ return
         if launch_id == cnt: continue
         if launch_counter == 0 {
             log_publish = true
-            log_buffer = "oŒ‚‰Â”\‚È”ÍˆÍ‚ª‚ ‚è‚Ü‚¹‚ñ"
+            log_buffer = "å‡ºæ’ƒå¯èƒ½ãªç¯„å›²ãŒã‚ã‚Šã¾ã›ã‚“"
             tank_used(launch_id) = false
             break
         }
@@ -1289,7 +1290,7 @@ return
     loop
 return
 
-// ”ÍˆÍ‘I‘ğ‚µ‚½Û‚Ìˆ—
+// ç¯„å›²é¸æŠã—ãŸéš›ã®å‡¦ç†
 *game_area_select_player_tank
     listClear selected_tank_index_list
     repeat PLAYER_COUNT
@@ -1301,7 +1302,7 @@ return
     loop
 return
 
-// ƒ~ƒjƒ}ƒbƒv‚Ì‰Šú‰»
+// ãƒŸãƒ‹ãƒãƒƒãƒ—ã®åˆæœŸåŒ–
 *game_init_minimap
     gsel MINIMAP_BUFFER
     repeat field_height_max / MAPCHIP_EDGE_POINT
@@ -1315,16 +1316,16 @@ return
     gsel 0
 return
 
-// ƒ~ƒjƒ}ƒbƒv‚Ì•`‰æ
+// ãƒŸãƒ‹ãƒãƒƒãƒ—ã®æç”»
 *game_draw_minimap
-    // Šî€“_
+    // åŸºæº–ç‚¹
     minimap_base_x = WINDOW_WIDTH / 2 - (field_width_max / MAPCHIP_EDGE_POINT) / 2
     minimap_base_y = WINDOW_HEIGHT / 2 - (field_height_max / MAPCHIP_EDGE_POINT) / 2
-    // ƒ}ƒbƒv•`‰æ
+    // ãƒãƒƒãƒ—æç”»
     pos minimap_base_x, minimap_base_y
     gmode 0
     gcopy MINIMAP_BUFFER, 0, 0, field_width_max / MAPCHIP_EDGE_POINT, field_height_max / MAPCHIP_EDGE_POINT
-    // íÔ‚ÌˆÊ’u‚Ì•`‰æ
+    // æˆ¦è»Šã®ä½ç½®ã®æç”»
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) && (cnt < PLAYER_COUNT || tank_found(cnt)) {
             if cnt < ENEMY_BASE_INDEX {
@@ -1339,16 +1340,16 @@ return
             psetBig minimap_base_x + tank_x(cnt) / double(MAPCHIP_EDGE_POINT), minimap_base_y + tank_y(cnt) / double(MAPCHIP_EDGE_POINT), 2
         }
     loop
-    // ©w•`‰æ
+    // è‡ªé™£æç”»
     color 0, 0, 0
     psetBig minimap_base_x + player_castle_x / double(MAPCHIP_EDGE_POINT), minimap_base_y + player_castle_y / double(MAPCHIP_EDGE_POINT), 2
-    // “Gw•`‰æ
+    // æ•µé™£æç”»
     color 0, 0, 0
     psetBig minimap_base_x + enemy_castle_x / double(MAPCHIP_EDGE_POINT), minimap_base_y + enemy_castle_y / double(MAPCHIP_EDGE_POINT), 2
     gmode 2
 return
 
-// ’†‘à‚Ö‚ÌQ‰Áˆ—
+// ä¸­éšŠã¸ã®å‚åŠ å‡¦ç†
 *game_make_company
     speed_min = 100.0
     hp_max = 0
@@ -1363,7 +1364,7 @@ return
         }
     loop
     repeat listLen(selected_tank_index_list)
-        if formation == COMPAMYFORMATION_OFF { // ‘I‘ğ’†‚ÌíÔ‚ğ’†‘à‚©‚çŠO‚·
+        if formation == COMPAMYFORMATION_OFF { // é¸æŠä¸­ã®æˆ¦è»Šã‚’ä¸­éšŠã‹ã‚‰å¤–ã™
             tank_company(listGet(selected_tank_index_list, cnt)) = -1
             continue
         }
@@ -1388,11 +1389,11 @@ return
 return
 
 
-// íÔ‚Ì©“®UŒ‚
+// æˆ¦è»Šã®è‡ªå‹•æ”»æ’ƒ
 *game_tankattack
     repeat PLAYER_COUNT + ENEMY_COUNT
         if tank_used(cnt) {
-            // Æ€‘ÎÛ‚ğ‘I‘ğ
+            // ç…§æº–å¯¾è±¡ã‚’é¸æŠ
             shoot_from = cnt
             shoot_to = -1
             if shoot_from < PLAYER_COUNT {
@@ -1403,7 +1404,7 @@ return
                 repeat_base = PLAYER_BASE_INDEX
             }
             switch tank_operation(shoot_from)
-                case OPERATION_ATTACK_TO_NEAR: // ˆê”Ô‹ß‚¢íÔ‚ğUŒ‚
+                case OPERATION_ATTACK_TO_NEAR: // ä¸€ç•ªè¿‘ã„æˆ¦è»Šã‚’æ”»æ’ƒ
                     near_distance = 10000000000.0
                     repeat repeat_counter, repeat_base
                         if tank_used(cnt) {
@@ -1415,7 +1416,7 @@ return
                         }
                     loop
                     swbreak
-                case OPERATION_ATTACK_TO_STRONGER: // ˆê”ÔÅ‘å‘Ì—Í‚ª‚‚¢íÔ‚ğUŒ‚
+                case OPERATION_ATTACK_TO_STRONGER: // ä¸€ç•ªæœ€å¤§ä½“åŠ›ãŒé«˜ã„æˆ¦è»Šã‚’æ”»æ’ƒ
                     repeat repeat_counter, repeat_base
                         if tank_used(cnt) && distance(tank_x(shoot_from), tank_y(shoot_from), tank_x(cnt), tank_y(cnt)) < tank_range(shoot_from) && tank_found(cnt) {
                             if shoot_to == -1 {
@@ -1428,7 +1429,7 @@ return
                         }
                     loop
                     swbreak
-                case OPERATION_ATTACK_TO_SPECIFIED: // —DæUŒ‚w’è‚³‚ê‚½íÔ‚©‚çƒ‰ƒ“ƒ_ƒ€‚ÉUŒ‚
+                case OPERATION_ATTACK_TO_SPECIFIED: // å„ªå…ˆæ”»æ’ƒæŒ‡å®šã•ã‚ŒãŸæˆ¦è»Šã‹ã‚‰ãƒ©ãƒ³ãƒ€ãƒ ã«æ”»æ’ƒ
                     if listLen(specified_tank_index_list) == 0: swbreak
                     listShuffle specified_tank_index_list
                     repeat listLen(specified_tank_index_list)
@@ -1437,23 +1438,23 @@ return
                         }
                     loop
                     swbreak
-                case OPERATION_IGNORE: // “GíÔ‚ğ–³‹
-                    // ‰½‚à‚µ‚È‚¢
+                case OPERATION_IGNORE: // æ•µæˆ¦è»Šã‚’ç„¡è¦–
+                    // ä½•ã‚‚ã—ãªã„
                     swbreak
             swend
 
-            // ‘ÎÛ‚ª‚¢‚È‚¢‚Æ‚«‚ÍÆ€‰ğœ
+            // å¯¾è±¡ãŒã„ãªã„ã¨ãã¯ç…§æº–è§£é™¤
             if shoot_to = -1 {
                 tank_aiming(shoot_from) = false
                 continue
             }
 
-            // Æ€‚ğ‚ ‚í‚¹‚é
+            // ç…§æº–ã‚’ã‚ã‚ã›ã‚‹
             tank_aiming(shoot_from) = true
             tank_aim_x(shoot_from) = tank_x(shoot_to)
             tank_aim_y(shoot_from) = tank_y(shoot_to)
 
-            // UŒ‚
+            // æ”»æ’ƒ
             if tank_reload_time(shoot_from) == 0 {
                 tank_reload_time(shoot_from) = tankdata_reload_time(tank_id(shoot_from))
                 tank_bullet_to(shoot_from) = shoot_to
